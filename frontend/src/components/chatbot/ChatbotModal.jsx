@@ -55,7 +55,7 @@ export const ChatbotModal = ({ isOpen, onClose, messages, onSendMessage, isTypin
                                     </div>
                                 ) : (
                                     <div 
-                                        className="prose prose-sm text-white" 
+                                        className="prose prose-sm prose-invert text-white" 
                                         dangerouslySetInnerHTML={{ __html: msg.isMarkdown ? DOMPurify.sanitize(marked.parse(msg.content)) : msg.content }} 
                                     />
                                 )}
