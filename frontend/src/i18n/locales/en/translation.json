@@ -1,0 +1,329 @@
+{
+  "common": {
+    "appName": "MentyMate",
+    "tagline": "Earlier Awareness. Safer Support.",
+    "loading": "Loading...",
+    "save": "Save changes",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "close": "Close",
+    "loginRequired": "Please sign in to access this feature.",
+    "signIn": "Sign in",
+    "register": "Create account",
+    "signOut": "Sign out",
+    "languageLabel": "Language",
+    "english": "English",
+    "indonesian": "Bahasa Indonesia",
+    "offlineBanner": "You are offline. Crisis Guidance and 4-7-8 Breathing remain available.",
+    "nonDiagnosticNote": "MentyMate supports early self-awareness and care navigation. It does not provide medical or psychiatric diagnoses."
+  },
+  "nav": {
+    "home": "Home",
+    "checkin": "Daily Check-in",
+    "assessment": "Self-Assessment",
+    "support": "Support & Care",
+    "impact": "Impact & Safety",
+    "privacy": "Privacy",
+    "articles": "Resources",
+    "openChat": "Open Companion",
+    "urgentHelp": "Need urgent help?",
+    "mobile": {
+      "home": "Home",
+      "support": "Support",
+      "impact": "Impact",
+      "checkin": "Check-in",
+      "assessment": "Assess",
+      "login": "Sign in",
+      "ai": "AI"
+    }
+  },
+  "landing": {
+    "headline": "Notice emotional shifts early, reach safe support.",
+    "subheadline": "A bilingual preventive mental wellbeing platform built in Indonesia for a global audience. Validated PHQ-9 and GAD-7 screening, physical and mood tracking, local care navigation, and human-led crisis escalation.",
+    "primaryCta": "Start Daily Check-in",
+    "secondaryCta": "Explore Local Support",
+    "preview": {
+      "label": "Interactive Wellbeing Workspace",
+      "moodTitle": "14-Day Mood & Sleep Signal",
+      "moodStatus": "Baseline steady",
+      "screenTitle": "PHQ-9 / GAD-7 Screening",
+      "screenStatus": "Non-diagnostic awareness",
+      "safetyTitle": "Human Escalation Layer",
+      "safetyStatus": "24/7 verified hotlines"
+    },
+    "intentTitle": "What kind of support are you looking for?",
+    "intentSubtitle": "Start with the step that fits how you feel right now.",
+    "intents": [
+      {
+        "title": "Track mood & sleep",
+        "desc": "Log daily feelings, energy, and stress patterns in under a minute."
+      },
+      {
+        "title": "Screen anxiety or low mood",
+        "desc": "Take a validated PHQ-9 or GAD-7 check with personal baseline trends."
+      },
+      {
+        "title": "Calm stress & find care",
+        "desc": "Use 4-7-8 breathing offline or browse verified local clinics and counselors."
+      },
+      {
+        "title": "Reach urgent human help",
+        "desc": "Open immediate emergency numbers, crisis lines, and trusted contacts."
+      }
+    ],
+    "pillarsTitle": "Six pillars built for safer, earlier care",
+    "pillarsSubtitle": "Every capability is designed for early self-awareness, privacy autonomy, and human-led care without replacing qualified clinicians.",
+    "pillars": [
+      {
+        "code": "01",
+        "title": "Validated Early Identification",
+        "desc": "Screen mood and anxiety early using validated PHQ-9 and GAD-7 tools in English and Indonesian, backed by personal baseline trends."
+      },
+      {
+        "code": "02",
+        "title": "Stepped, Local Support Navigation",
+        "desc": "Access offline-ready 4-7-8 breathing, MateGroup peer support, and a regional directory of Puskesmas, hospitals, and tele-counseling."
+      },
+      {
+        "code": "03",
+        "title": "Human-led High-risk Escalation",
+        "desc": "Detect high-risk signals across chat and screenings early, then immediately surface reviewed emergency hotlines and human referrals."
+      },
+      {
+        "code": "04",
+        "title": "Privacy, Consent & Autonomy",
+        "desc": "Control every feature with granular, revocable consent, encrypted reflection notes, full JSON data export, and instant account deletion."
+      },
+      {
+        "code": "05",
+        "title": "Coordinated Physical & Mental Care",
+        "desc": "Log sleep quality, energy, movement, and stress alongside daily mood to generate a voluntary summary ready to share with clinicians."
+      },
+      {
+        "code": "06",
+        "title": "Outcome & Safety Monitoring",
+        "desc": "Track screening completion, care directory follow-through, crisis guidance completion, and EN/ID parity without storing personal text."
+      }
+    ],
+    "faqTitle": "Transparency & Clinical Boundaries",
+    "faqs": [
+      {
+        "q": "Does MentyMate diagnose depression or anxiety?",
+        "a": "No. MentyMate uses validated self-assessment questionnaires (PHQ-9 and GAD-7) to help you notice changes over time. Only a qualified healthcare professional can make a diagnosis."
+      },
+      {
+        "q": "What happens if I express distress or crisis signals?",
+        "a": "Our deterministic safety layer interrupts normal AI chat and immediately presents pre-reviewed local emergency numbers, crisis helplines, and trusted-contact options."
+      },
+      {
+        "q": "Is my check-in data shared with the WhatsApp Community?",
+        "a": "Never. Joining the MateGroup WhatsApp Community is completely separate and voluntary; no mood logs or assessment results are ever shared automatically."
+      }
+    ]
+  },
+  "auth": {
+    "loginTitle": "Sign in to MentyMate",
+    "loginSubtitle": "Access your longitudinal check-ins, validated assessments, and privacy controls.",
+    "registerTitle": "Create your MentyMate account",
+    "registerSubtitle": "Set your preferred language and region for tailored local care navigation.",
+    "username": "Username",
+    "password": "Password",
+    "phone": "Phone number (optional)",
+    "country": "Country",
+    "region": "City / Region (optional)",
+    "preferredLanguage": "Preferred language",
+    "loginBtn": "Sign in",
+    "registerBtn": "Create account",
+    "noAccount": "New to MentyMate?",
+    "hasAccount": "Already have an account?"
+  },
+  "checkin": {
+    "title": "Daily Mood & Physical Check-in",
+    "subtitle": "Log how you feel today alongside optional sleep, energy, and stress signals.",
+    "moodQuestion": "How are you feeling today?",
+    "moods": {
+      "baik": "Good",
+      "sedang": "Okay",
+      "buruk": "Struggling"
+    },
+    "noteLabel": "Reflection note (optional)",
+    "notePlaceholder": "Write what is on your mind today...",
+    "physicalToggle": "Add physical wellbeing metrics (Pillar 05)",
+    "sleepQuality": "Sleep quality (1–5)",
+    "sleepDuration": "Sleep duration (hours)",
+    "energyLevel": "Energy level (1–5)",
+    "activityMinutes": "Physical activity (minutes)",
+    "stressLevel": "Stress level (1–5)",
+    "submitBtn": "Save today's check-in",
+    "confirmTitle": "Save daily check-in?",
+    "confirmBody": "You can submit one check-in per day. Your note is protected under your mood-tracking consent.",
+    "savedMsg": "Daily check-in saved.",
+    "tabs": {
+      "today": "Today",
+      "history": "History",
+      "insights": "AI Pattern Reflection",
+      "summary": "Clinician Summary"
+    },
+    "getInsights": "Generate Pattern Reflection",
+    "summaryTitle": "Voluntary Wellbeing Summary (14-Day)",
+    "summaryDesc": "Designed to be printed or shared voluntarily with a doctor, psychologist, or counselor.",
+    "printSummary": "Print / Save PDF",
+    "noHistory": "No check-ins recorded yet.",
+    "needTodayTitle": "Complete today's check-in first",
+    "needTodayBody": "Please submit today's daily check-in before viewing AI Pattern Reflection so the analysis includes your latest mood and physical signals.",
+    "goToToday": "Go to Today's Check-in"
+  },
+  "assessment": {
+    "title": "Validated Self-Assessment",
+    "subtitle": "Recognize shifts in mood and anxiety over the past two weeks.",
+    "selectInstrument": "Choose an instrument",
+    "phq9Name": "PHQ-9 (Depression Screening)",
+    "gad7Name": "GAD-7 (Anxiety Screening)",
+    "timeframePrompt": "Over the last 2 weeks, how often have you been bothered by any of the following problems?",
+    "options": [
+      "Not at all",
+      "Several days",
+      "More than half the days",
+      "Nearly every day"
+    ],
+    "submit": "Calculate & Save Result",
+    "resultTitle": "Your Screening Result",
+    "scoreLabel": "Total score",
+    "severityLabel": "Severity band",
+    "bands": {
+      "minimal": "Minimal",
+      "mild": "Mild",
+      "moderate": "Moderate",
+      "moderately_severe": "Moderately severe",
+      "severe": "Severe"
+    },
+    "baselineTitle": "Personal Baseline & Longitudinal Trend",
+    "trendLabels": {
+      "improving": "Improving",
+      "stable": "Stable",
+      "declining": "Needs attention"
+    },
+    "historyTitle": "Past Assessments"
+  },
+  "support": {
+    "title": "Stepped, Local Support Navigation",
+    "subtitle": "From offline-ready self-guided calming tools to verified local professionals.",
+    "breathingTitle": "Self-Guided Calming: 4-7-8 Breathing",
+    "breathingDesc": "Works offline anytime. Follow the gentle rhythm to down-regulate acute stress.",
+    "startBreathing": "Start Breathing",
+    "stopBreathing": "Pause",
+    "phases": {
+      "inhale": "Inhale slowly (4s)",
+      "hold": "Hold gently (7s)",
+      "exhale": "Exhale fully (8s)",
+      "ready": "Ready when you are"
+    },
+    "peerTitle": "Peer Support: MateGroup WhatsApp Community",
+    "peerDesc": "Connect with peers in a moderated space. No check-in or assessment data is ever shared automatically.",
+    "peerCta": "Join Peer Community",
+    "peerPrivacyTitle": "Before opening WhatsApp",
+    "peerPrivacyBody": "MentyMate never sends your mood logs, chat history, or screening scores to WhatsApp. Your WhatsApp profile visibility is governed by your WhatsApp privacy settings.",
+    "peerProceed": "Continue to WhatsApp",
+    "directoryTitle": "Professional & Urgent Support Directory",
+    "filterCountry": "Country",
+    "filterRegion": "Region",
+    "filterCategory": "Category",
+    "categories": {
+      "ALL": "All categories",
+      "urgent_helpline": "Urgent Helpline",
+      "puskesmas": "Puskesmas (Primary Care)",
+      "hospital": "Hospital / RSJ",
+      "psychologist": "Psychologist",
+      "psychiatrist": "Psychiatrist",
+      "tele_mental_health": "Tele-Mental Health"
+    },
+    "freeBadge": "Free / Subsidized",
+    "eligibilityLabel": "Eligibility",
+    "callNow": "Call",
+    "visitSite": "Visit",
+    "confirmFollowup": "I contacted this service",
+    "followupThanks": "Thank you for confirming. This helps us measure real care navigation."
+  },
+  "crisis": {
+    "bannerTitle": "Need immediate human support?",
+    "bannerAction": "View Crisis Guidance",
+    "trustedContactTitle": "Trusted Contact",
+    "noTrustedContact": "You have not added a trusted contact yet. You can add one in Privacy & Profile settings.",
+    "callTrusted": "Call trusted contact"
+  },
+  "privacy": {
+    "title": "Privacy, Consent & Autonomy",
+    "subtitle": "You decide which features process your data, and you can revoke consent or delete your account anytime.",
+    "consentsTitle": "Feature Consents",
+    "consentItems": {
+      "aiChat": {
+        "title": "AI Companion Chat",
+        "desc": "Allow MentyMate to process your chat messages for supportive responses and safety screening."
+      },
+      "moodTracking": {
+        "title": "Daily Mood & Physical Check-in",
+        "desc": "Store your daily mood, physical metrics, and encrypted reflection notes for trend analysis."
+      },
+      "selfAssessment": {
+        "title": "Validated Self-Assessments (PHQ-9 & GAD-7)",
+        "desc": "Store your screening scores to compute your personal baseline and longitudinal trends."
+      }
+    },
+    "gateTitle": "Consent Required",
+    "gateGrant": "Grant Consent & Continue",
+    "profileRegionTitle": "Location & Trusted Contact",
+    "dataControlTitle": "Your Data Controls",
+    "exportBtn": "Export My Data (JSON)",
+    "deleteBtn": "Delete Account & All Data",
+    "deleteConfirm": "This permanently deletes your account, check-ins, and assessments. Continue?"
+  },
+  "impact": {
+    "title": "Outcome & Safety Monitoring",
+    "subtitle": "Aggregated, PII-free ecosystem metrics measuring screening completion, care conversion, safety guidance, and bilingual equity.",
+    "refresh": "Refresh metrics",
+    "sections": {
+      "conversion": "Early Identification & Care Conversion",
+      "safety": "Human-Led Crisis Safety Telemetry",
+      "equity": "Language & Geography Fairness",
+      "outcomes": "Longitudinal Symptom Outcomes"
+    },
+    "descriptions": {
+      "screeningRate": "Percentage of started PHQ-9 / GAD-7 screenings completed.",
+      "checkins": "Total daily mood and physical wellbeing logs recorded.",
+      "directoryViews": "Searches across local clinics, hospitals, and tele-mental health.",
+      "referralFollowups": "Users voluntarily confirming they contacted a listed service.",
+      "activityUsed": "Completed 4-7-8 breathing or self-guided calming sessions.",
+      "crisisRate": "Share of triggered crisis alerts where users reviewed safety guidance.",
+      "symptomImprovement": "Users with 2+ screenings showing a lower follow-up PHQ-9 / GAD-7 score.",
+      "privacyNote": "Privacy guarantee: All metrics are aggregated from anonymized event counts. No reflection notes, chat transcripts, or demographic PII are stored in analytics."
+    },
+    "cards": {
+      "screeningRate": "Screening Completion Rate",
+      "checkins": "Daily Check-ins Logged",
+      "directoryViews": "Care Directory Searches",
+      "referralFollowups": "Confirmed Care Follow-ups",
+      "activityUsed": "Calming Activities Completed",
+      "crisisRate": "Crisis Guidance Completion",
+      "crisisTotal": "Safety Alerts Triggered",
+      "langParity": "Language Usage (EN / ID)",
+      "symptomImprovement": "Symptom Improvement Rate",
+      "geographyFairness": "Geography Coverage (Events)"
+    }
+  },
+  "chat": {
+    "title": "MentyMate Companion",
+    "status": "Supportive AI (Non-clinical)",
+    "welcome": "Hello! I'm MentyMate, your preventive mental wellbeing companion. How are you feeling today?",
+    "placeholder": "Share what's on your mind...",
+    "send": "Send",
+    "consentPrompt": "Please grant AI Companion Chat consent in Privacy Settings to start chatting."
+  },
+  "blog": {
+    "title": "Wellbeing & Prevention Resources",
+    "subtitle": "Evidence-informed guides on stress management, online gambling recovery, and emotional resilience."
+  },
+  "footer": {
+    "note": "Earlier Awareness. Safer Support. Built in Indonesia, ready for the world.",
+    "disclaimer": "Not a clinical or emergency service. In a crisis, contact local emergency services immediately."
+  }
+}

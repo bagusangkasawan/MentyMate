@@ -1,74 +1,126 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useApi } from '../hooks/useApi';
-import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 import { CustomModal } from '../components/ui/CustomModal';
-
-const ThemedInput = (props) => (
-    <input
-        {...props}
-        className="w-full mt-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4F959D] focus:outline-none transition-shadow shadow-sm bg-gray-50"
-    />
-);
+import { COUNTRIES } from '../config/language';
 
 export const RegisterPage = () => {
-    const { loading, callApi, modal, setModal } = useApi();
-    const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
+  const { loading, callApi, modal, setModal } = useApi();
 
-    const handleRegister = async (e) => {
-        e.preventDefault();
-        const username = e.target.username.value;
-        const phone = e.target.phone.value;
-        const password = e.target.password.value;
-        try {
-            await callApi('/auth/register', 'POST', { username, phone, password });
-            setModal({
-                show: true,
-                title: 'Sukses',
-                message: 'Registrasi berhasil! Anda akan diarahkan ke halaman login.'
-            });
-            setTimeout(() => {
-                navigate('/login');
-            }, 2000); // Arahkan setelah 2 detik
-        } catch (err) {
-             // Modal ditampilkan oleh hook callApi
-        }
-    };
+  const [form, setForm] = useState({
+    username: '',
+    password: '',
+    phone: '',
+    preferredLanguage: i18n.language === 'id' ? 'id' : 'en',
+    country: 'ID',
+    region: '',
+  });
 
-    return (
-        <div className="bg-[#F6F8D5] min-h-screen py-10 px-4 flex items-center justify-center">
-            {loading && <LoadingSpinner />}
-            <CustomModal {...modal} onClose={() => {
-                setModal({ ...modal, show: false });
-                if (modal.title === 'Sukses') {
-                    navigate('/login');
-                }
-            }} />
-            <div className="max-w-md w-full mx-auto">
-                <section className="bg-white shadow-lg rounded-xl p-6 sm:p-10 transition-shadow hover:shadow-xl">
-                    <div>
-                        <h2 className="text-3xl font-bold mb-4 text-center text-[#205781]">Register</h2>
-                        <form onSubmit={handleRegister}>
-                            <div className="mb-3">
-                                <label className="block text-sm font-medium mb-1 text-gray-700">Username</label>
-                                <ThemedInput type="text" name="username" required />
-                            </div>
-                            <div className="mb-3">
-                                <label className="block text-sm font-medium mb-1 text-gray-700">Nomor Telepon</label>
-                                <ThemedInput type="number" name="phone" required placeholder="Contoh: 628123456789" />
-                            </div>
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium mb-1 text-gray-700">Password</label>
-                                <ThemedInput type="password" name="password" required />
-                            </div>
-                            <button type="submit" className="w-full bg-[#4F959D] text-white font-semibold py-3 px-4 rounded-lg hover:bg-[#427d83] transition-colors">Register</button>
-                        </form>
-                        <p className="mt-4 text-center text-sm">
-                            Sudah punya akun? <Link to="/login" className="text-[#4F959D] font-medium hover:underline">Login di sini</Link>
-                        </p>
-                    </div>
-                </section>
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await callApi('/auth/register', 'POST', form);
+      navigate('/login');
+    } catch {
+      // handled
+    }
+  };
+
+  return (
+    <div className="mx-auto max-w-md px-4 py-12 sm:px-6">
+      <div className="rounded-3xl border border-border bg-surface p-6 sm:p-8">
+        <h1 className="text-2xl font-bold text-foreground">{t('auth.registerTitle')}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{t('auth.registerSubtitle')}</p>
+
+        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+          <div>
+            <label className="block text-xs font-semibold text-muted-foreground">
+              {t('auth.username')}
+            </label>
+            <input
+              type="text"
+              required
+              minLength={3}
+              value={form.username}
+              onChange={(e) => setForm({ ...form, username: e.target.value })}
+              className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-muted-foreground">
+              {t('auth.password')}
+            </label>
+            <input
+              type="password"
+              required
+              minLength={6}
+              value={form.password}
+              onChange={(e) => setForm({ ...form, password: e.target.value })}
+              className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-semibold text-muted-foreground">
+                {t('auth.preferredLanguage')}
+              </label>
+              <select
+                value={form.preferredLanguage}
+                onChange={(e) => setForm({ ...form, preferredLanguage: e.target.value })}
+                className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+              >
+                <option value="en">English</option>
+                <option value="id">Bahasa Indonesia</option>
+              </select>
             </div>
-        </div>
-    );
+            <div>
+              <label className="block text-xs font-semibold text-muted-foreground">
+                {t('auth.country')}
+              </label>
+              <select
+                value={form.country}
+                onChange={(e) => setForm({ ...form, country: e.target.value })}
+                className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+              >
+                {COUNTRIES.map((c) => (
+                  <option key={c.code} value={c.code}>{c.label}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-muted-foreground">
+              {t('auth.region')}
+            </label>
+            <input
+              type="text"
+              value={form.region}
+              onChange={(e) => setForm({ ...form, region: e.target.value })}
+              placeholder="Jabodetabek, Bandung..."
+              className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="min-h-[48px] w-full rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition-transform hover:bg-primary-hover active:scale-[0.98] disabled:opacity-60"
+          >
+            {loading ? t('common.loading') : t('auth.registerBtn')}
+          </button>
+        </form>
+
+        <p className="mt-5 text-center text-xs text-muted-foreground">
+          {t('auth.hasAccount')}{' '}
+          <Link to="/login" className="font-semibold text-primary hover:underline">
+            {t('common.signIn')}
+          </Link>
+        </p>
+      </div>
+      <CustomModal modal={modal} setModal={setModal} />
+    </div>
+  );
 };

@@ -1,0 +1,329 @@
+{
+  "common": {
+    "appName": "MentyMate",
+    "tagline": "Kesadaran Lebih Dini. Dukungan Lebih Aman.",
+    "loading": "Memuat...",
+    "save": "Simpan perubahan",
+    "cancel": "Batal",
+    "confirm": "Konfirmasi",
+    "close": "Tutup",
+    "loginRequired": "Silakan masuk untuk mengakses fitur ini.",
+    "signIn": "Masuk",
+    "register": "Daftar",
+    "signOut": "Keluar",
+    "languageLabel": "Bahasa",
+    "english": "English",
+    "indonesian": "Bahasa Indonesia",
+    "offlineBanner": "Kamu sedang offline. Panduan Krisis dan Pernapasan 4-7-8 tetap tersedia.",
+    "nonDiagnosticNote": "MentyMate mendukung kesadaran diri dini dan navigasi bantuan. Platform ini bukan alat diagnosis medis atau psikiatri."
+  },
+  "nav": {
+    "home": "Beranda",
+    "checkin": "Check-in Harian",
+    "assessment": "Asesmen Mandiri",
+    "support": "Layanan & Bantuan",
+    "impact": "Dampak & Keselamatan",
+    "privacy": "Privasi",
+    "articles": "Edukasi",
+    "openChat": "Buka Pendamping AI",
+    "urgentHelp": "Butuh bantuan segera?",
+    "mobile": {
+      "home": "Beranda",
+      "support": "Layanan",
+      "impact": "Dampak",
+      "checkin": "Check-in",
+      "assessment": "Asesmen",
+      "login": "Masuk",
+      "ai": "AI"
+    }
+  },
+  "landing": {
+    "headline": "Kenali perubahan mental dini, temukan bantuan aman.",
+    "subheadline": "Platform kesehatan mental preventif bilingual dari Indonesia untuk audiens global. Skrining PHQ-9 dan GAD-7 tervalidasi, pelacakan mood dan fisik, navigasi layanan lokal, serta eskalasi krisis ke manusia.",
+    "primaryCta": "Mulai Check-in Harian",
+    "secondaryCta": "Cari Layanan Bantuan",
+    "preview": {
+      "label": "Ruang Kerja Kesejahteraan",
+      "moodTitle": "Sinyal Mood & Tidur 14 Hari",
+      "moodStatus": "Baseline terjaga",
+      "screenTitle": "Skrining PHQ-9 / GAD-7",
+      "screenStatus": "Refleksi non-diagnostik",
+      "safetyTitle": "Lapisan Eskalasi Manusia",
+      "safetyStatus": "Hotline terverifikasi 24/7"
+    },
+    "intentTitle": "Dukungan apa yang sedang kamu butuhkan?",
+    "intentSubtitle": "Mulai dari langkah yang paling sesuai dengan kondisimu saat ini.",
+    "intents": [
+      {
+        "title": "Pantau mood & tidur",
+        "desc": "Catat perasaan, energi, dan tingkat stres harian kurang dari satu menit."
+      },
+      {
+        "title": "Skrining cemas atau murung",
+        "desc": "Isi kuesioner PHQ-9 atau GAD-7 tervalidasi dengan tren baseline pribadi."
+      },
+      {
+        "title": "Tenangkan diri & cari layanan",
+        "desc": "Gunakan latihan napas 4-7-8 offline atau cari klinik dan psikolog lokal."
+      },
+      {
+        "title": "Hubungi bantuan manusia segera",
+        "desc": "Buka nomor darurat lokal, saluran krisis, dan pintasan kontak tepercaya."
+      }
+    ],
+    "pillarsTitle": "Enam pilar untuk perawatan yang lebih dini dan aman",
+    "pillarsSubtitle": "Setiap fitur dirancang untuk deteksi dini, otonomi privasi, dan rujukan ke tenaga manusia tanpa menggantikan peran klinisi.",
+    "pillars": [
+      {
+        "code": "01",
+        "title": "Identifikasi Dini Tervalidasi",
+        "desc": "Skrining mood dan kecemasan lebih dini lewat PHQ-9 dan GAD-7 tervalidasi dalam dua bahasa, lengkap dengan analisis baseline pribadi."
+      },
+      {
+        "code": "02",
+        "title": "Navigasi Dukungan Bertahap & Lokal",
+        "desc": "Akses latihan napas 4-7-8 siap-offline, komunitas sebaya MateGroup, serta direktori Puskesmas, rumah sakit, psikolog, dan tele-konseling."
+      },
+      {
+        "code": "03",
+        "title": "Eskalasi Risiko Tinggi Berbasis Manusia",
+        "desc": "Deteksi sinyal risiko tinggi dari percakapan dan skrining secara dini untuk langsung menampilkan kontak darurat dan rujukan manusia."
+      },
+      {
+        "code": "04",
+        "title": "Privasi, Persetujuan & Otonomi",
+        "desc": "Kendalikan data lewat persetujuan granular yang bisa dicabut, enkripsi catatan sensitif, ekspor JSON penuh, dan penghapusan akun instan."
+      },
+      {
+        "code": "05",
+        "title": "Perawatan Fisik & Mental Terkoordinasi",
+        "desc": "Catat kualitas tidur, energi, aktivitas fisik, dan stres bersama mood harian untuk menyusun ringkasan sukarela bagi tenaga kesehatan."
+      },
+      {
+        "code": "06",
+        "title": "Pemantauan Outcome & Keselamatan",
+        "desc": "Pantau tingkat penyelesaian skrining, tindak lanjut rujukan, penyelesaian panduan krisis, serta paritas EN/ID tanpa menyimpan teks pribadi."
+      }
+    ],
+    "faqTitle": "Transparansi & Batasan Klinis",
+    "faqs": [
+      {
+        "q": "Apakah MentyMate mendiagnosis depresi atau kecemasan?",
+        "a": "Tidak. MentyMate menggunakan kuesioner skrining tervalidasi (PHQ-9 dan GAD-7) untuk membantu mengenali perubahan pola dari waktu ke waktu. Diagnosis hanya dapat dilakukan oleh tenaga kesehatan profesional."
+      },
+      {
+        "q": "Apa yang terjadi jika saya menuliskan sinyal krisis?",
+        "a": "Lapisan keselamatan deterministik akan menghentikan respons AI biasa dan langsung menampilkan nomor darurat lokal, saluran krisis, serta opsi menghubungi orang tepercaya."
+      },
+      {
+        "q": "Apakah data check-in saya dibagikan ke WhatsApp Community?",
+        "a": "Tidak pernah. Bergabung ke WhatsApp Community MateGroup sepenuhnya terpisah dan sukarela; tidak ada catatan mood atau hasil skrining yang dibagikan secara otomatis."
+      }
+    ]
+  },
+  "auth": {
+    "loginTitle": "Masuk ke MentyMate",
+    "loginSubtitle": "Akses riwayat check-in, asesmen tervalidasi, dan pengaturan privasi Anda.",
+    "registerTitle": "Buat Akun MentyMate",
+    "registerSubtitle": "Atur bahasa dan wilayah Anda untuk navigasi layanan dukungan lokal yang relevan.",
+    "username": "Username",
+    "password": "Kata sandi",
+    "phone": "Nomor telepon (opsional)",
+    "country": "Negara",
+    "region": "Kota / Wilayah (opsional)",
+    "preferredLanguage": "Bahasa pilihan",
+    "loginBtn": "Masuk",
+    "registerBtn": "Buat akun",
+    "noAccount": "Belum punya akun?",
+    "hasAccount": "Sudah punya akun?"
+  },
+  "checkin": {
+    "title": "Check-in Mood & Fisik Harian",
+    "subtitle": "Catat perasaanmu hari ini bersama sinyal tidur, energi, dan stres opsional.",
+    "moodQuestion": "Bagaimana perasaanmu hari ini?",
+    "moods": {
+      "baik": "Baik",
+      "sedang": "Sedang",
+      "buruk": "Berat / Buruk"
+    },
+    "noteLabel": "Catatan refleksi (opsional)",
+    "notePlaceholder": "Ceritakan apa yang kamu rasakan hari ini...",
+    "physicalToggle": "Tambahkan metrik kesejahteraan fisik (Pilar 05)",
+    "sleepQuality": "Kualitas tidur (1–5)",
+    "sleepDuration": "Durasi tidur (jam)",
+    "energyLevel": "Tingkat energi (1–5)",
+    "activityMinutes": "Aktivitas fisik (menit)",
+    "stressLevel": "Tingkat stres (1–5)",
+    "submitBtn": "Simpan Check-in Hari Ini",
+    "confirmTitle": "Simpan check-in harian?",
+    "confirmBody": "Kamu dapat mengirim satu check-in per hari. Catatanmu dilindungi oleh persetujuan pelacakan mood.",
+    "savedMsg": "Check-in harian tersimpan.",
+    "tabs": {
+      "today": "Hari Ini",
+      "history": "Riwayat",
+      "insights": "Refleksi Pola AI",
+      "summary": "Ringkasan Klinisi"
+    },
+    "getInsights": "Buat Refleksi Pola",
+    "summaryTitle": "Ringkasan Kesejahteraan Sukarela (14 Hari)",
+    "summaryDesc": "Dirancang untuk dicetak atau dibagikan secara sukarela kepada dokter, psikolog, atau konselor.",
+    "printSummary": "Cetak / Simpan PDF",
+    "noHistory": "Belum ada check-in yang tercatat.",
+    "needTodayTitle": "Isi check-in hari ini terlebih dahulu",
+    "needTodayBody": "Silakan kirim daily check-in hari ini terlebih dahulu agar AI Pattern Reflection menyertakan kondisi mood dan fisikmu yang terbaru.",
+    "goToToday": "Isi Check-in Hari Ini"
+  },
+  "assessment": {
+    "title": "Asesmen Mandiri Tervalidasi",
+    "subtitle": "Kenali perubahan gejala mood dan kecemasan selama dua minggu terakhir.",
+    "selectInstrument": "Pilih instrumen",
+    "phq9Name": "PHQ-9 (Skrining Depresi)",
+    "gad7Name": "GAD-7 (Skrining Kecemasan)",
+    "timeframePrompt": "Selama 2 minggu terakhir, seberapa sering kamu terganggu oleh masalah-masalah berikut?",
+    "options": [
+      "Tidak pernah",
+      "Beberapa hari",
+      "Lebih dari separuh waktu",
+      "Hampir setiap hari"
+    ],
+    "submit": "Hitung & Simpan Hasil",
+    "resultTitle": "Hasil Skrining Kamu",
+    "scoreLabel": "Total skor",
+    "severityLabel": "Kategori keparahan",
+    "bands": {
+      "minimal": "Minimal",
+      "mild": "Ringan",
+      "moderate": "Sedang",
+      "moderately_severe": "Sedang-Berat",
+      "severe": "Berat"
+    },
+    "baselineTitle": "Baseline Pribadi & Tren Longitudinal",
+    "trendLabels": {
+      "improving": "Membaik",
+      "stable": "Stabil",
+      "declining": "Perlu perhatian"
+    },
+    "historyTitle": "Riwayat Asesmen"
+  },
+  "support": {
+    "title": "Navigasi Dukungan Bertahap & Lokal",
+    "subtitle": "Mulai dari latihan penenangan diri siap-offline hingga direktori tenaga profesional lokal.",
+    "breathingTitle": "Dukungan Mandiri: Pernapasan 4-7-8",
+    "breathingDesc": "Berfungsi offline kapan saja. Ikuti ritme napas untuk meredakan stres akut.",
+    "startBreathing": "Mulai Latihan",
+    "stopBreathing": "Jeda",
+    "phases": {
+      "inhale": "Tarik napas perlahan (4d)",
+      "hold": "Tahan lembut (7d)",
+      "exhale": "Hembuskan penuh (8d)",
+      "ready": "Siap kapan pun kamu mulai"
+    },
+    "peerTitle": "Dukungan Sebaya: WhatsApp Community MateGroup",
+    "peerDesc": "Terhubung dengan teman sebaya di ruang yang termoderasi. Data check-in maupun asesmen tidak pernah dibagikan otomatis.",
+    "peerCta": "Gabung Komunitas Sebaya",
+    "peerPrivacyTitle": "Sebelum membuka WhatsApp",
+    "peerPrivacyBody": "MentyMate tidak pernah mengirimkan catatan mood, riwayat chat, atau skor skrining ke WhatsApp. Privasi profilmu di grup mengikuti pengaturan privasi WhatsApp kamu.",
+    "peerProceed": "Lanjutkan ke WhatsApp",
+    "directoryTitle": "Direktori Layanan Profesional & Darurat",
+    "filterCountry": "Negara",
+    "filterRegion": "Wilayah",
+    "filterCategory": "Kategori",
+    "categories": {
+      "ALL": "Semua kategori",
+      "urgent_helpline": "Saluran Darurat",
+      "puskesmas": "Puskesmas",
+      "hospital": "Rumah Sakit / RSJ",
+      "psychologist": "Psikolog",
+      "psychiatrist": "Psikiater",
+      "tele_mental_health": "Tele-Kesehatan Mental"
+    },
+    "freeBadge": "Gratis / Subsidi",
+    "eligibilityLabel": "Kelayakan",
+    "callNow": "Hubungi",
+    "visitSite": "Kunjungi",
+    "confirmFollowup": "Saya sudah menghubungi layanan ini",
+    "followupThanks": "Terima kasih atas konfirmasinya. Ini membantu kami mengukur efektivitas navigasi bantuan."
+  },
+  "crisis": {
+    "bannerTitle": "Butuh bantuan manusia segera?",
+    "bannerAction": "Lihat Panduan Krisis",
+    "trustedContactTitle": "Kontak Tepercaya",
+    "noTrustedContact": "Kamu belum menambahkan kontak tepercaya. Kamu bisa menambahkannya di Pengaturan Privasi.",
+    "callTrusted": "Hubungi kontak tepercaya"
+  },
+  "privacy": {
+    "title": "Privasi, Persetujuan & Otonomi",
+    "subtitle": "Kamu memegang kendali atas fitur yang memproses datamu, dan dapat mencabut persetujuan atau menghapus akun kapan saja.",
+    "consentsTitle": "Persetujuan per Fitur",
+    "consentItems": {
+      "aiChat": {
+        "title": "AI Companion Chat",
+        "desc": "Izinkan MentyMate memproses pesan chat untuk respons suportif dan skrining keselamatan."
+      },
+      "moodTracking": {
+        "title": "Check-in Mood & Fisik Harian",
+        "desc": "Simpan mood harian, metrik fisik, dan catatan refleksi terenkripsi untuk analisis tren."
+      },
+      "selfAssessment": {
+        "title": "Asesmen Mandiri Tervalidasi (PHQ-9 & GAD-7)",
+        "desc": "Simpan skor skrining untuk membentuk baseline pribadi dan tren longitudinal."
+      }
+    },
+    "gateTitle": "Persetujuan Diperlukan",
+    "gateGrant": "Setujui & Lanjutkan",
+    "profileRegionTitle": "Lokasi & Kontak Tepercaya",
+    "dataControlTitle": "Kontrol Data Pengguna",
+    "exportBtn": "Ekspor Dataku (JSON)",
+    "deleteBtn": "Hapus Akun & Semua Data",
+    "deleteConfirm": "Tindakan ini akan menghapus akun, seluruh check-in, dan asesmen secara permanen. Lanjutkan?"
+  },
+  "impact": {
+    "title": "Pemantauan Outcome & Keselamatan",
+    "subtitle": "Metrik ekosistem teragregasi bebas PII yang mengukur penyelesaian skrining, konversi bantuan, panduan krisis, dan kesetaraan bahasa.",
+    "refresh": "Muat ulang metrik",
+    "sections": {
+      "conversion": "Identifikasi Dini & Konversi Bantuan",
+      "safety": "Telemetri Keselamatan & Eskalasi Krisis",
+      "equity": "Kesetaraan Bahasa & Geografi",
+      "outcomes": "Outcome Gejala Longitudinal"
+    },
+    "descriptions": {
+      "screeningRate": "Persentase skrining PHQ-9 / GAD-7 yang diselesaikan hingga tuntas.",
+      "checkins": "Total catatan check-in mood dan fisik harian yang tersimpan.",
+      "directoryViews": "Pencarian pada direktori klinik lokal, RSJ, dan tele-konseling.",
+      "referralFollowups": "Pengguna yang mengonfirmasi telah menghubungi layanan bantuan.",
+      "activityUsed": "Sesi latihan pernapasan 4-7-8 atau dukungan mandiri yang selesai.",
+      "crisisRate": "Rasio peringatan krisis di mana panduan keselamatan dibaca hingga selesai.",
+      "symptomImprovement": "Pengguna dengan 2+ skrining yang menunjukkan penurunan skor PHQ-9 / GAD-7.",
+      "privacyNote": "Jaminan privasi: Seluruh metrik berasal dari hitungan event anonim tanpa PII. Isi jurnal refleksi, transkrip chat, maupun data demografis tidak pernah disimpan di analitik."
+    },
+    "cards": {
+      "screeningRate": "Tingkat Penyelesaian Skrining",
+      "checkins": "Total Check-in Harian",
+      "directoryViews": "Pencarian Direktori Layanan",
+      "referralFollowups": "Konfirmasi Tindak Lanjut Rujukan",
+      "activityUsed": "Aktivitas Penenangan Selesai",
+      "crisisRate": "Penyelesaian Panduan Krisis",
+      "crisisTotal": "Peringatan Krisis Terpicu",
+      "langParity": "Penggunaan Bahasa (EN / ID)",
+      "symptomImprovement": "Tingkat Perbaikan Gejala",
+      "geographyFairness": "Cakupan Geografi (Event)"
+    }
+  },
+  "chat": {
+    "title": "Pendamping MentyMate",
+    "status": "AI Suportif (Non-klinis)",
+    "welcome": "Halo! Saya MentyMate, pendamping kesejahteraan mental preventifmu. Bagaimana perasaanmu hari ini?",
+    "placeholder": "Ceritakan apa yang sedang kamu rasakan...",
+    "send": "Kirim",
+    "consentPrompt": "Mohon aktifkan persetujuan AI Companion Chat di Pengaturan Privasi untuk mulai mengobrol."
+  },
+  "blog": {
+    "title": "Edukasi & Pencegahan",
+    "subtitle": "Panduan berbasis bukti tentang manajemen stres, pemulihan kecanduan judi online, dan ketahanan emosional."
+  },
+  "footer": {
+    "note": "Kesadaran Lebih Dini. Dukungan Lebih Aman. Lahir dari Indonesia, siap untuk dunia.",
+    "disclaimer": "Bukan layanan klinis atau darurat. Dalam situasi krisis, segera hubungi layanan darurat setempat."
+  }
+}

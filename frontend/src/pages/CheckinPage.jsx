@@ -1,282 +1,410 @@
-import React, { useState } from 'react';
-import { useApi } from '../hooks/useApi';
-import { LoadingSpinner } from '../components/ui/LoadingSpinner';
-import { CustomModal } from '../components/ui/CustomModal';
-import { UserCog, Home } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Printer, Activity } from 'lucide-react';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
+import { useApi } from '../hooks/useApi';
+import { ConsentGate } from '../components/privacy/ConsentGate';
+import { CustomModal } from '../components/ui/CustomModal';
 
-// This is a reusable styled input component to ensure consistency
-const ThemedInput = (props) => (
-    <input 
-        {...props}
-        className="w-full mt-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4F959D] focus:outline-none transition-shadow shadow-sm bg-gray-50"
-    />
-);
+export const CheckinPage = ({ token, onTriggerCrisis }) => {
+  const { t, i18n } = useTranslation();
+  const { loading, callApi, modal, setModal } = useApi();
 
-export const CheckinPage = ({ user, token, onLogin, onLogout }) => {
-    const { loading, callApi, modal, setModal } = useApi();
-    
-    // Logged in state
-    const [currentView, setCurrentView] = useState('main'); // 'main', 'edit', 'history', 'recommendation'
-    const [selectedMood, setSelectedMood] = useState("baik");
-    const [checkinHistory, setCheckinHistory] = useState([]);
-    const [recommendation, setRecommendation] = useState('');
+  const [tab, setTab] = useState('today'); // 'today' | 'history' | 'insights' | 'summary'
+  const [consentRequired, setConsentRequired] = useState(false);
+  const [mood, setMood] = useState('baik');
+  const [description, setDescription] = useState('');
+  const [showPhysical, setShowPhysical] = useState(false);
+  const [physical, setPhysical] = useState({
+    sleepQuality: 3,
+    sleepDurationHours: 7,
+    energyLevel: 3,
+    physicalActivityMinutes: 20,
+    stressLevel: 3,
+  });
+  const [history, setHistory] = useState([]);
+  const [recommendation, setRecommendation] = useState('');
+  const [recommendationLang, setRecommendationLang] = useState('');
+  const [summary, setSummary] = useState(null);
 
-    const fetchHistory = async () => {
-        try {
-            const data = await callApi('/checkin', 'GET', null, token);
-            setCheckinHistory(data.sort((a,b) => new Date(b.date) - new Date(a.date)));
-            setCurrentView('history');
-        } catch(err) {
-            console.error(err);
-        }
+  const activeLang = i18n.language === 'id' ? 'id' : 'en';
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+  const hasCheckedInToday = history.some((c) => new Date(c.date) >= startOfToday);
+
+  const loadHistory = useCallback(async () => {
+    try {
+      const data = await callApi('/checkin', 'GET', null, token, { silent: true });
+      setHistory(data || []);
+      setConsentRequired(false);
+    } catch (err) {
+      if (err.code === 'CONSENT_REQUIRED') setConsentRequired(true);
     }
+  }, [callApi, token]);
 
-    const fetchRecommendation = async () => {
-        try {
-            const data = await callApi('/checkin/recommendation', 'GET', null, token);
-            setRecommendation(data.recommendation || 'Tidak ada rekomendasi terbaru.');
-            setCurrentView('recommendation');
-        } catch(err) {
-            console.error(err);
-        }
-    }
-    
-    const handleCheckinSubmit = (e) => {
-        e.preventDefault();
-        const mood = selectedMood;
-        const description = e.target.description.value;
+  useEffect(() => {
+    loadHistory();
+  }, [loadHistory]);
 
-        // Simpan sementara data form
-        const pendingData = { mood, description };
-
-        setModal({
-            show: true,
-            title: "Konfirmasi Check-in",
-            message:
-            "Apakah kamu yakin ingin mengirim check-in ini? <br/>Data tidak bisa diubah atau dihapus setelah dikirim.",
-            confirmText: "Ya, Kirim",
-            cancelText: "Batal",
-            onConfirm: async () => {
-            try {
-                await callApi("/checkin", "POST", pendingData, token);
-                setModal({
-                show: true,
-                title: "Sukses",
-                message: "Check-in berhasil disimpan!"
-                });
-                fetchHistory();
-            } catch (err) {
-                // error sudah ditangani useApi
-            }
-            },
-            onCancel: () => setModal({ show: false })
-        });
-
-        // reset form setelah submit
-        e.target.reset();
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const payload = {
+      mood,
+      description,
+      language: i18n.language === 'id' ? 'id' : 'en',
+      ...(showPhysical ? { physicalMetrics: physical } : {}),
     };
-    
-    const handleProfileUpdate = async (e) => {
-        e.preventDefault();
-        const body = {
-            username: e.target.username.value,
-            phone: e.target.phone.value,
-        };
-        if(e.target.password.value){
-            body.password = e.target.password.value
-        }
-        
+
+    setModal({
+      show: true,
+      title: t('checkin.confirmTitle'),
+      message: t('checkin.confirmBody'),
+      confirmText: t('common.confirm'),
+      cancelText: t('common.cancel'),
+      onConfirm: async () => {
         try {
-            await callApi('/auth/update-profile', 'PUT', body, token);
-            setModal({show: true, title: 'Sukses', message: 'Profil berhasil diperbarui!'});
-            // Re-fetch user profile to update name
-            const userProfile = await callApi('/auth/me', 'GET', null, token);
-            onLogin(token, userProfile); // re-login to update user state in App
-            setCurrentView('main');
+          const res = await callApi('/checkin', 'POST', payload, token);
+          setDescription('');
+          setRecommendation('');
+          setRecommendationLang('');
+          setSummary(null);
+          setModal({ show: true, title: t('common.appName'), message: t('checkin.savedMsg') });
+          if (res.isCrisis) {
+            onTriggerCrisis(res.crisisProtocol, res.incidentId);
+          }
+          await loadHistory();
         } catch (err) {
-            // modal handled
+          if (err.code === 'CONSENT_REQUIRED') setConsentRequired(true);
         }
-    }
+      },
+      onCancel: () => setModal({ show: false }),
+    });
+  };
 
-    const renderMoodEmoji = (mood) => {
-        if (mood === 'baik') return '😊';
-        if (mood === 'sedang') return '😐';
-        if (mood === 'buruk') return '😟';
-        return '';
+  const handleFetchInsights = async () => {
+    setTab('insights');
+    if (!hasCheckedInToday || loading) return;
+    if (recommendation && recommendationLang === activeLang) return;
+    try {
+      const data = await callApi('/checkin/recommendation', 'GET', null, token);
+      setRecommendation(data.recommendation || '');
+      setRecommendationLang(activeLang);
+    } catch {
+      // handled
     }
+  };
 
-    const MainCheckinView = () => (
-        <div>
-            <form onSubmit={handleCheckinSubmit} className="mb-4">
-                <div className="mb-3">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Bagaimana perasaanmu hari ini?
-                    </label>
-                    <div className="grid grid-cols-3 gap-3">
-                        {[
-                            { value: "baik", emoji: "😊", text: "Baik", color: "bg-green-100 border-green-400" },
-                            { value: "sedang", emoji: "😐", text: "Sedang", color: "bg-yellow-100 border-yellow-400" },
-                            { value: "buruk", emoji: "😟", text: "Buruk", color: "bg-red-100 border-red-400" },
-                        ].map((mood) => (
-                            <div
-                                key={mood.value}
-                                onClick={() => setSelectedMood(mood.value)}
-                                className={`cursor-pointer flex flex-col items-center justify-center gap-1 p-4 text-center rounded-lg border font-semibold transition-all
-                                    ${selectedMood === mood.value 
-                                        ? `${mood.color} ring-2 ring-offset-2 ring-${mood.color.split('-')[1]}-500` 
-                                        : "bg-gray-50 border-gray-300 hover:bg-gray-100"}`}
-                            >
-                                <span className="text-2xl">{mood.emoji}</span>
-                                <span className="text-sm sm:inline hidden">{mood.text}</span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-                <div className="mb-4">
-                    <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-                        Ceritakan lebih lanjut (opsional):
-                    </label>
-                    <textarea id="description" name="description" rows="3" className="w-full mt-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4F959D] focus:outline-none transition-shadow shadow-sm bg-gray-50"></textarea>
-                </div>
-                <button type="submit" className="w-full bg-green-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-green-700 transition-colors shadow-sm hover:shadow-md">
-                    Kirim Check-in
-                </button>
-            </form>
-            <div className="grid sm:grid-cols-2 gap-3">
-                <button onClick={fetchRecommendation} className="w-full bg-[#205781] text-white font-semibold py-2 px-4 rounded-lg hover:bg-[#1a4a6e] transition-colors">
-                    Dapatkan Rekomendasi
-                </button>
-                <button onClick={fetchHistory} className="w-full bg-[#4F959D] text-white font-semibold py-2 px-4 rounded-lg hover:bg-[#427d83] transition-colors">
-                    Riwayat Check-in
-                </button>
-            </div>
-        </div>
-    );
-    
-    const EditProfileView = () => (
-        <div>
-            <h3 className="text-xl font-semibold mb-3 text-[#205781]">Edit Profil</h3>
-            <form onSubmit={handleProfileUpdate}>
-                <div className="mb-3">
-                    <label htmlFor="editUsername" className="block text-sm font-medium">Username Baru</label>
-                    <ThemedInput type="text" id="editUsername" name="username" defaultValue={user.username} />
-                </div>
-                <div className="mb-3">
-                    <label htmlFor="editPhone" className="block text-sm font-medium">Nomor Telepon Baru</label>
-                    <ThemedInput type="number" id="editPhone" name="phone" defaultValue={user?.phone ?? "62"} />
-                    <p className="text-xs text-gray-500 mt-1">Diawali dengan 62, contoh 628123456789.</p>
-                </div>
-                <div className="mb-3">
-                    <label htmlFor="editPassword" className="block text-sm font-medium">Password Baru</label>
-                    <ThemedInput type="password" id="editPassword" name="password" placeholder="Kosongkan jika tidak ingin diubah" />
-                </div>
-                <div className="flex justify-end gap-2 mt-4">
-                    <button type="button" onClick={() => setCurrentView('main')} className="bg-gray-200 text-gray-800 text-sm font-semibold py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors">Batal</button>
-                    <button type="submit" className="bg-[#205781] text-white text-sm font-semibold py-2 px-4 rounded-lg hover:bg-[#1a4a6e] transition-colors">Simpan Perubahan</button>
-                </div>
-            </form>
-        </div>
-    );
-    
-    const HistoryView = () => (
-        <div className="mt-4">
-            <h3 className="text-xl font-semibold mb-3 text-[#205781]">Riwayat Check-in Anda</h3>
-            <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
-                {checkinHistory.length > 0 ? checkinHistory.map(item => (
-                    <div key={item.date} className="bg-teal-50 border border-[#4F959D] p-4 rounded-lg">
-                        <p className="font-semibold text-gray-800">Tanggal: <span className="font-normal">{new Date(item.date).toLocaleString('id-ID')}</span></p>
-                        <p className="font-semibold text-gray-800">Mood: <span className="font-normal capitalize">{item.mood} {renderMoodEmoji(item.mood)}</span></p>
-                        <p className="font-semibold text-gray-800">Deskripsi: <span className="font-normal">{item.description || '-'}</span></p>
-                    </div>
-                )) : <p>Belum ada riwayat check-in.</p>}
-            </div>
-        </div>
-    );
-
-    const RecommendationView = () => (
-        <div className="mt-4 bg-teal-50 border border-[#98D2C0] p-5 rounded-lg">
-            <h3 className="text-xl font-semibold mb-3 text-[#205781]">Rekomendasi Aktivitas</h3>
-            <div className="prose" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(marked.parse(recommendation)) }} />
-        </div>
-    );
-    
-    if (!user) {
-        // Ini akan ditampilkan sebentar sebelum redirect dari ProtectedRoute berjalan
-        return <LoadingSpinner />;
+  const handleFetchSummary = async () => {
+    setTab('summary');
+    if (summary || loading) return;
+    try {
+      const data = await callApi('/checkin/wellbeing-summary', 'GET', null, token);
+      setSummary(data);
+    } catch {
+      // handled
     }
-    
+  };
+
+  if (consentRequired) {
     return (
-        <div className="bg-[#F6F8D5] min-h-screen py-10 px-4">
-            {loading && <LoadingSpinner />}
-            <CustomModal {...modal} onClose={() => setModal({ ...modal, show: false })} />
-            <div className="max-w-2xl mx-auto">
-                <section className="bg-white shadow-lg rounded-xl p-6 sm:p-10 transition-shadow hover:shadow-xl">
-                    <h2 className="text-3xl font-bold mb-2 text-center text-[#205781]">Daily Check-in</h2>
-                    <p className="text-center mb-3 text-gray-700">Selamat datang kembali, {user?.username}!</p>
-
-                    <div className="space-y-5">
-                        <div className="text-center">
-                            <p className="text-base text-gray-700">
-                            <span className="font-semibold text-[#205781]">Di halaman Check-in ini</span>, Anda dapat:
-                            </p>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            {[
-                                { icon: "📝", title: "Mencatat perasaan", desc: "dan kondisi mentalmu setiap hari." },
-                                { icon: "💡", title: "Mendapatkan saran", desc: "aktivitas positif yang dipersonalisasi." },
-                                { icon: "📊", title: "Melihat riwayat check-in", desc: "untuk memantau perkembangan." },
-                                { icon: "👤", title: "Mengelola profil", desc: "agar pengalamanmu lebih personal." },
-                            ].map((item, i) => (
-                            <div
-                                key={i}
-                                className="flex items-center gap-4 p-4 bg-[#F6FCDF] border border-[#d6e9e0] rounded-xl shadow-sm 
-                                        hover:shadow-md hover:-translate-y-1 transition-all duration-200"
-                            >
-                                <span className="text-xl flex-shrink-0">{item.icon}</span>
-                                <div>
-                                    <h4 className="text-sm font-semibold text-gray-800">{item.title}</h4>
-                                    <p className="text-sm text-gray-600">{item.desc}</p>
-                                </div>
-                            </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className="text-center m-4 flex flex-wrap justify-center gap-2">
-                        <button 
-                            onClick={() => setCurrentView('main')} 
-                            className={`text-sm font-semibold py-1 px-3 rounded-lg flex items-center gap-1 transition-all
-                            ${currentView === 'main' 
-                                ? 'bg-[#205781] text-white shadow-md' 
-                                : 'bg-transparent border border-[#205781] text-[#205781] hover:bg-[#205781] hover:scale-105 hover:shadow-md'}`
-                            }
-                        >
-                            <Home size={14} /> 
-                            Beranda Checkin
-                        </button>
-
-                        <button 
-                            onClick={() => setCurrentView('edit')} 
-                            className={`text-sm font-semibold py-1 px-3 rounded-lg flex items-center gap-1 transition-all
-                            ${currentView === 'edit' 
-                                ? 'bg-[#205781] text-white shadow-md' 
-                                : 'bg-transparent border border-[#205781] text-[#205781] hover:bg-[#205781] hover:scale-105 hover:shadow-md'}`
-                            }
-                        >
-                            <UserCog size={14} /> 
-                            Edit Profil
-                        </button>
-                    </div>
-
-                    {currentView === 'main' && <MainCheckinView />}
-                    {currentView === 'edit' && <EditProfileView />}
-                    {currentView === 'history' && <HistoryView />}
-                    {currentView === 'recommendation' && <RecommendationView />}
-                </section>
-            </div>
-        </div>
+      <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
+        <ConsentGate featureKey="moodTracking" token={token} onGranted={loadHistory} />
+      </div>
     );
+  }
+
+  return (
+    <div className="mx-auto max-w-4xl space-y-6 px-4 py-10 sm:px-6">
+      <div>
+        <h1 className="text-2xl font-bold text-foreground sm:text-3xl">{t('checkin.title')}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{t('checkin.subtitle')}</p>
+      </div>
+
+      {/* Pill Tabs (Headspace filter chips) */}
+      <div className="grid grid-cols-2 gap-2 border-b border-border pb-4 sm:flex sm:flex-wrap">
+        {[
+          { id: 'today', label: t('checkin.tabs.today'), onClick: () => setTab('today') },
+          { id: 'history', label: t('checkin.tabs.history'), onClick: () => setTab('history') },
+          { id: 'insights', label: t('checkin.tabs.insights'), onClick: handleFetchInsights },
+          { id: 'summary', label: t('checkin.tabs.summary'), onClick: handleFetchSummary },
+        ].map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            onClick={item.onClick}
+            className={`min-h-[44px] rounded-full px-4 py-2 text-xs font-semibold transition-colors ${
+              tab === item.id
+                ? 'bg-primary text-primary-foreground'
+                : 'border border-border bg-surface text-foreground hover:bg-surface-muted'
+            }`}
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
+
+      {tab === 'today' && (
+        <form onSubmit={handleSubmit} className="space-y-5 rounded-2xl border border-border bg-surface p-4 sm:p-6">
+          <div>
+            <label className="block text-sm font-semibold text-foreground">
+              {t('checkin.moodQuestion')}
+            </label>
+            <div className="mt-2 grid grid-cols-3 gap-2 sm:gap-3">
+              {['baik', 'sedang', 'buruk'].map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => setMood(m)}
+                  className={`min-h-[44px] rounded-lg border px-2 py-2.5 text-xs font-semibold transition-colors sm:px-4 sm:py-3 sm:text-sm ${
+                    mood === m
+                      ? 'border-primary bg-accent-soft text-foreground'
+                      : 'border-border bg-background text-muted-foreground hover:bg-surface-muted'
+                  }`}
+                >
+                  {t(`checkin.moods.${m}`)}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="checkin-note" className="block text-sm font-semibold text-foreground">
+              {t('checkin.noteLabel')}
+            </label>
+            <textarea
+              id="checkin-note"
+              rows="3"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder={t('checkin.notePlaceholder')}
+              className="mt-1.5 w-full rounded-lg border border-border bg-background p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+          </div>
+
+          {/* Pillar 05: Optional Physical Metrics */}
+          <div className="rounded-lg border border-border bg-background p-4">
+            <label className="flex cursor-pointer items-center gap-2 text-sm font-semibold text-foreground">
+              <input
+                type="checkbox"
+                checked={showPhysical}
+                onChange={(e) => setShowPhysical(e.target.checked)}
+                className="accent-primary"
+              />
+              <Activity className="h-4 w-4 text-primary" aria-hidden="true" />
+              {t('checkin.physicalToggle')}
+            </label>
+
+            {showPhysical && (
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="block text-xs font-medium text-muted-foreground">
+                    {t('checkin.sleepQuality')}
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="5"
+                    value={physical.sleepQuality}
+                    onChange={(e) =>
+                      setPhysical({ ...physical, sleepQuality: Number(e.target.value) })
+                    }
+                    className="mt-1 w-full rounded-md border border-border bg-surface px-3 py-1.5 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-muted-foreground">
+                    {t('checkin.sleepDuration')}
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="24"
+                    step="0.5"
+                    value={physical.sleepDurationHours}
+                    onChange={(e) =>
+                      setPhysical({ ...physical, sleepDurationHours: Number(e.target.value) })
+                    }
+                    className="mt-1 w-full rounded-md border border-border bg-surface px-3 py-1.5 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-muted-foreground">
+                    {t('checkin.energyLevel')}
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="5"
+                    value={physical.energyLevel}
+                    onChange={(e) =>
+                      setPhysical({ ...physical, energyLevel: Number(e.target.value) })
+                    }
+                    className="mt-1 w-full rounded-md border border-border bg-surface px-3 py-1.5 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-muted-foreground">
+                    {t('checkin.activityMinutes')}
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="1440"
+                    value={physical.physicalActivityMinutes}
+                    onChange={(e) =>
+                      setPhysical({
+                        ...physical,
+                        physicalActivityMinutes: Number(e.target.value),
+                      })
+                    }
+                    className="mt-1 w-full rounded-md border border-border bg-surface px-3 py-1.5 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-muted-foreground">
+                    {t('checkin.stressLevel')}
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="5"
+                    value={physical.stressLevel}
+                    onChange={(e) =>
+                      setPhysical({ ...physical, stressLevel: Number(e.target.value) })
+                    }
+                    className="mt-1 w-full rounded-md border border-border bg-surface px-3 py-1.5 text-sm"
+                  />
+                </div>
+                <div className="sm:col-span-2 rounded-md border border-dashed border-border bg-surface px-3 py-2 text-xs text-muted-foreground">
+                  {i18n.language === 'id'
+                    ? 'Integrasi Wearable (opsional, fase berikutnya): Saat ini input dicatat manual; sinkronisasi perangkat wearable siap dihubungkan pada pengembangan lanjutan.'
+                    : 'Optional Wearable Integration (upcoming): Currently logged manually; wearable sync hooks are prepared for future device integration.'}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="min-h-[48px] w-full rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-transform hover:bg-primary-hover active:scale-[0.98] disabled:opacity-60"
+          >
+            {loading ? t('common.loading') : t('checkin.submitBtn')}
+          </button>
+        </form>
+      )}
+
+      {tab === 'history' && (
+        <div className="rounded-xl border border-border bg-surface p-6">
+          {history.length === 0 ? (
+            <p className="text-sm text-muted-foreground">{t('checkin.noHistory')}</p>
+          ) : (
+            <div className="divide-y divide-border">
+              {history.map((c) => (
+                <div key={c._id} className="py-3.5">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-semibold text-foreground">
+                      {t(`checkin.moods.${c.mood}`)}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {new Date(c.date).toLocaleDateString()}
+                    </span>
+                  </div>
+                  {c.description && (
+                    <p className="mt-1 text-sm text-muted-foreground">{c.description}</p>
+                  )}
+                  {c.physicalMetrics && (
+                    <p className="mt-1 text-xs text-primary">
+                      Sleep: {c.physicalMetrics.sleepDurationHours ?? '-'}h · Energy:{' '}
+                      {c.physicalMetrics.energyLevel ?? '-'}/5 · Stress:{' '}
+                      {c.physicalMetrics.stressLevel ?? '-'}/5
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {tab === 'insights' && (
+        <div className="rounded-xl border border-border bg-surface p-6">
+          {!hasCheckedInToday ? (
+            <div className="space-y-3">
+              <h2 className="text-lg font-bold text-foreground">{t('checkin.needTodayTitle')}</h2>
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                {t('checkin.needTodayBody')}
+              </p>
+              <button
+                type="button"
+                onClick={() => setTab('today')}
+                className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary-hover"
+              >
+                {t('checkin.goToToday')}
+              </button>
+            </div>
+          ) : loading ? (
+            <p className="text-sm text-muted-foreground">{t('common.loading')}</p>
+          ) : (
+            <div
+              className="prose prose-sm max-w-none text-foreground prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground"
+              dangerouslySetInnerHTML={{
+                __html: DOMPurify.sanitize(marked.parse(recommendation || t('checkin.noHistory'))),
+              }}
+            />
+          )}
+        </div>
+      )}
+
+      {tab === 'summary' && (
+        <div className="rounded-xl border border-border bg-surface p-4 sm:p-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+            <div>
+              <h2 className="text-lg font-bold text-foreground">{t('checkin.summaryTitle')}</h2>
+              <p className="mt-1 text-xs text-muted-foreground">{t('checkin.summaryDesc')}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => window.print()}
+              className="inline-flex min-h-[44px] w-full items-center justify-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs font-semibold hover:bg-surface-muted sm:w-auto"
+            >
+              <Printer className="h-4 w-4" aria-hidden="true" />
+              {t('checkin.printSummary')}
+            </button>
+          </div>
+
+          {summary && (
+            <div className="mt-5 space-y-4 text-sm">
+              <p className="rounded-lg bg-surface-muted p-3 text-xs text-muted-foreground">
+                {summary.disclaimer}
+              </p>
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div className="rounded-lg border border-border p-3">
+                  <div className="text-xs text-muted-foreground">Avg Sleep</div>
+                  <div className="mt-1 text-lg font-bold">
+                    {summary.physicalAverages?.sleepDurationHours ?? '—'} h
+                  </div>
+                </div>
+                <div className="rounded-lg border border-border p-3">
+                  <div className="text-xs text-muted-foreground">Avg Energy</div>
+                  <div className="mt-1 text-lg font-bold">
+                    {summary.physicalAverages?.energyLevel ?? '—'} / 5
+                  </div>
+                </div>
+                <div className="rounded-lg border border-border p-3">
+                  <div className="text-xs text-muted-foreground">Avg Stress</div>
+                  <div className="mt-1 text-lg font-bold">
+                    {summary.physicalAverages?.stressLevel ?? '—'} / 5
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      <CustomModal modal={modal} setModal={setModal} />
+    </div>
+  );
 };

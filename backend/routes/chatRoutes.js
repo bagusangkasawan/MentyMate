@@ -1,55 +1,31 @@
 const express = require('express');
+const { z } = require('zod');
 const router = express.Router();
-const authMiddleware = require('../middleware/authMiddleware');
-const { chatWithBot } = require('../controllers/chatController');
+const chatController = require('../controllers/chatController');
+const auth = require('../middleware/authMiddleware');
+const { requireConsent } = require('../middleware/consentMiddleware');
+const { validate } = require('../middleware/validate');
+const { getCrisisProtocol } = require('../data/crisisTemplates');
+const { resolveLanguage } = require('../utils/i18n');
 
-/**
- * @swagger
- * tags:
- *   name: Chatbot
- *   description: Interact with the AI chatbot using BytePlus
- */
+const chatSchema = z.object({
+  message: z.string().trim().min(1).max(2000),
+  language: z.enum(['en', 'id']).optional(),
+});
 
-/**
- * @swagger
- * /chat:
- *   post:
- *     summary: Send a message to the chatbot (BytePlus)
- *     tags: [Chatbot]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - message
- *             properties:
- *               message:
- *                 type: string
- *                 description: Message from the user to the chatbot
- *                 example: "I am feeling stressed, what should I do?"
- *     responses:
- *       200:
- *         description: Response from the BytePlus chatbot
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 reply:
- *                   type: string
- *                   example: "I understand that you are feeling stressed. Please tell me more."
- *       400:
- *         description: Bad request, message must not be empty
- *       401:
- *         description: Unauthorized, token is missing or invalid
- *       500:
- *         description: Internal server error or failed communication with BytePlus
- */
+const ackSchema = z.object({
+  incidentId: z.string().optional(),
+  language: z.enum(['en', 'id']).optional(),
+});
 
-router.post('/', authMiddleware, chatWithBot);
+// Public crisis guidance endpoint (no login required)
+router.get('/crisis-guidance', (req, res) => {
+  const lang = resolveLanguage(req);
+  const country = (req.query.country || 'ID').toString().toUpperCase();
+  res.json(getCrisisProtocol(lang, country));
+});
+
+router.post('/', auth, requireConsent('aiChat'), validate(chatSchema), chatController.chatWithBot);
+router.post('/crisis-ack', auth, validate(ackSchema), chatController.acknowledgeCrisisGuidance);
 
 module.exports = router;

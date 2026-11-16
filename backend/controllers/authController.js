@@ -1,88 +1,103 @@
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { getDefaultLanguage, resolveLanguage, t } = require('../utils/i18n');
 
 exports.register = async (req, res) => {
-  const { username, password, phone } = req.body;
+  const { username, password, phone, preferredLanguage, country, region } = req.body;
+  const lang = preferredLanguage || resolveLanguage(req);
 
   try {
     const existing = await User.findOne({ username });
-    if (existing) return res.status(400).json({ message: 'Username sudah terdaftar.' });
+    if (existing) return res.status(400).json({ message: t(lang, 'usernameExists') });
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = new User({
       username,
       password: hashedPassword,
-      phone
+      phone: phone || undefined,
+      preferredLanguage: preferredLanguage || getDefaultLanguage(),
+      country: (country || 'ID').toUpperCase(),
+      region: region || '',
     });
 
     await user.save();
-    res.status(201).json({ message: 'User berhasil didaftarkan.' });
+    res.status(201).json({ message: t(lang, 'userCreated') });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Terjadi kesalahan server.' });
+    res.status(500).json({ message: t(lang, 'serverError') });
   }
 };
 
 exports.login = async (req, res) => {
   const { username, password } = req.body;
+  const lang = resolveLanguage(req);
   try {
     const user = await User.findOne({ username });
-    if (!user) return res.status(404).json({ message: 'User tidak ditemukan.' });
+    if (!user) return res.status(404).json({ message: t(lang, 'userNotFound') });
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(401).json({ message: 'Username atau password salah.' });
+    if (!isMatch) return res.status(401).json({ message: t(lang, 'invalidCredentials') });
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-    res.json({ token });
+    res.json({
+      token,
+      preferredLanguage: user.preferredLanguage,
+      country: user.country,
+    });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Terjadi kesalahan server' });
+    res.status(500).json({ message: t(lang, 'serverError') });
   }
 };
 
 exports.getMe = async (req, res) => {
+  const lang = resolveLanguage(req);
   try {
     const user = await User.findById(req.userId).select('-password');
     if (!user) {
-      return res.status(404).json({ message: 'User tidak ditemukan.' });
+      return res.status(404).json({ message: t(lang, 'userNotFound') });
     }
     res.json(user);
   } catch (err) {
     console.error('Error getMe:', err.message);
-    res.status(500).json({ message: 'Gagal mengambil data user.' });
+    res.status(500).json({ message: t(lang, 'serverError') });
   }
 };
 
 exports.updateProfile = async (req, res) => {
+  const lang = resolveLanguage(req);
   try {
-    const { username, password, phone } = req.body;
+    const { username, password, phone, preferredLanguage, country, region, trustedContact } = req.body;
     const updates = {};
 
     const user = await User.findById(req.userId);
-    if (!user) return res.status(404).json({ message: 'User tidak ditemukan.' });
+    if (!user) return res.status(404).json({ message: t(lang, 'userNotFound') });
 
     if (username) updates.username = username;
 
     if (password) {
       const isSamePassword = await bcrypt.compare(password, user.password);
       if (isSamePassword) {
-        return res.status(400).json({ message: 'Password baru harus berbeda dari password saat ini.' });
+        return res.status(400).json({ message: t(lang, 'samePassword') });
       }
-      const hashed = await bcrypt.hash(password, 10);
-      updates.password = hashed;
+      updates.password = await bcrypt.hash(password, 10);
     }
-    
-    if (phone) updates.phone = phone;
+
+    if (phone !== undefined) updates.phone = phone;
+    if (preferredLanguage) updates.preferredLanguage = preferredLanguage;
+    if (country) updates.country = country.toUpperCase();
+    if (region !== undefined) updates.region = region;
+    if (trustedContact) updates.trustedContact = trustedContact;
 
     if (Object.keys(updates).length === 0) {
-        return res.status(400).json({ message: 'Tidak ada data untuk diperbarui.' });
+      return res.status(400).json({ message: t(lang, 'noUpdates') });
     }
 
     const updatedUser = await User.findByIdAndUpdate(req.userId, updates, { new: true }).select('-password');
-    res.json({ message: 'Profil berhasil diperbarui', user: updatedUser });
+    res.json({ message: t(updatedUser.preferredLanguage || lang, 'profileUpdated'), user: updatedUser });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Gagal memperbarui profil.' });
+    res.status(500).json({ message: t(lang, 'serverError') });
   }
 };

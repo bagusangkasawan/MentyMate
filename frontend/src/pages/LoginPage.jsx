@@ -1,69 +1,78 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useApi } from '../hooks/useApi';
-import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 import { CustomModal } from '../components/ui/CustomModal';
-
-const ThemedInput = (props) => (
-    <input
-        {...props}
-        className="w-full mt-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4F959D] focus:outline-none transition-shadow shadow-sm bg-gray-50"
-    />
-);
+import { setAppLanguage } from '../i18n';
 
 export const LoginPage = ({ onLogin }) => {
-    const { loading, callApi, modal, setModal } = useApi();
+  const { t } = useTranslation();
+  const { loading, callApi, modal, setModal } = useApi();
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
 
-    const handleLogin = async (e) => {
-        e.preventDefault();
-        const username = e.target.username.value;
-        const password = e.target.password.value;
-        try {
-            const data = await callApi('/auth/login', 'POST', { username, password });
-            if (data && data.token) {
-                const userProfile = await callApi('/auth/me', 'GET', null, data.token);
-                // Fungsi onLogin di App.jsx akan menangani navigasi
-                setModal({
-                    show: true,
-                    title: "Login Berhasil",
-                    message: `Selamat datang, ${userProfile?.username || "User"}!`
-                });
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const data = await callApi('/auth/login', 'POST', { username, password });
+      if (data.preferredLanguage) {
+        setAppLanguage(data.preferredLanguage);
+      }
+      const profile = await callApi('/auth/me', 'GET', null, data.token);
+      onLogin(data.token, profile);
+    } catch {
+      // handled by useApi
+    }
+  };
 
-                // kasih jeda biar modal kebaca
-                setTimeout(() => {
-                    onLogin(data.token, userProfile);
-                }, 2000);
-            }
-        } catch (err) {
-            // Modal ditampilkan oleh hook callApi
-        }
-    };
+  return (
+    <div className="mx-auto max-w-md px-4 py-14 sm:px-6">
+      <div className="rounded-3xl border border-border bg-surface p-6 sm:p-8">
+        <h1 className="text-2xl font-bold text-foreground">{t('auth.loginTitle')}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{t('auth.loginSubtitle')}</p>
 
-    return (
-        <div className="bg-[#F6F8D5] min-h-screen py-10 px-4 flex items-center justify-center">
-            {loading && <LoadingSpinner />}
-            <CustomModal {...modal} onClose={() => setModal({ ...modal, show: false })} />
-            <div className="max-w-md w-full mx-auto">
-                <section className="bg-white shadow-lg rounded-xl p-6 sm:p-10 transition-shadow hover:shadow-xl">
-                    <div>
-                        <h2 className="text-3xl font-bold mb-4 text-center text-[#205781]">Login</h2>
-                        <form onSubmit={handleLogin}>
-                            <div className="mb-3">
-                                <label className="block text-sm font-medium mb-1 text-gray-700">Username</label>
-                                <ThemedInput type="text" name="username" required />
-                            </div>
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium mb-1 text-gray-700">Password</label>
-                                <ThemedInput type="password" name="password" required />
-                            </div>
-                            <button type="submit" className="w-full bg-[#205781] text-white font-semibold py-3 px-4 rounded-lg hover:bg-[#1a4a6e] transition-colors">Login</button>
-                        </form>
-                        <p className="mt-4 text-center text-sm">
-                            Belum punya akun? <Link to="/register" className="text-[#4F959D] font-medium hover:underline">Daftar di sini</Link>
-                        </p>
-                    </div>
-                </section>
-            </div>
-        </div>
-    );
+        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+          <div>
+            <label className="block text-xs font-semibold text-muted-foreground">
+              {t('auth.username')}
+            </label>
+            <input
+              type="text"
+              required
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-muted-foreground">
+              {t('auth.password')}
+            </label>
+            <input
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className="min-h-[48px] w-full rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition-transform hover:bg-primary-hover active:scale-[0.98] disabled:opacity-60"
+          >
+            {loading ? t('common.loading') : t('auth.loginBtn')}
+          </button>
+        </form>
+
+        <p className="mt-5 text-center text-xs text-muted-foreground">
+          {t('auth.noAccount')}{' '}
+          <Link to="/register" className="font-semibold text-primary hover:underline">
+            {t('common.register')}
+          </Link>
+        </p>
+      </div>
+      <CustomModal modal={modal} setModal={setModal} />
+    </div>
+  );
 };
