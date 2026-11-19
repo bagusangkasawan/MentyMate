@@ -11,6 +11,7 @@
     "signIn": "Sign in",
     "register": "Create account",
     "signOut": "Sign out",
+    "signOutConfirm": "Are you sure you want to sign out of your current session?",
     "languageLabel": "Language",
     "english": "English",
     "indonesian": "Bahasa Indonesia",
@@ -25,6 +26,7 @@
     "impact": "Impact & Safety",
     "privacy": "Privacy",
     "articles": "Resources",
+    "try": "Try Preview",
     "openChat": "Open Companion",
     "urgentHelp": "Need urgent help?",
     "mobile": {
@@ -42,6 +44,27 @@
     "subheadline": "A bilingual preventive mental wellbeing platform built in Indonesia for a global audience. Validated PHQ-9 and GAD-7 screening, physical and mood tracking, local care navigation, and human-led crisis escalation.",
     "primaryCta": "Start Daily Check-in",
     "secondaryCta": "Explore Local Support",
+    "tryCta": "Try 2-min Preview (No Account)",
+    "governanceTitle": "Safety & Clinical Governance",
+    "governanceSubtitle": "Built around published clinical screening standards and deterministic safety guardrails, never unverified AI advice.",
+    "governanceItems": [
+      {
+        "title": "Validated PHQ-9 & GAD-7",
+        "desc": "Standardized depression and anxiety screening instruments with transparent, non-diagnostic scoring."
+      },
+      {
+        "title": "WHO mhGAP Stepped Care",
+        "desc": "Matches intensity of support from self-care and peer groups up to primary care and urgent crisis lines."
+      },
+      {
+        "title": "Deterministic Crisis Gate",
+        "desc": "Rule-based self-harm and PHQ-9 Item 9 detection intercepts crisis signals before any AI model runs."
+      },
+      {
+        "title": "Encrypted & Revocable Privacy",
+        "desc": "AES-256-GCM personal notes, granular per-feature consent, and zero exposure to employers or insurers."
+      }
+    ],
     "preview": {
       "label": "Interactive Wellbeing Workspace",
       "moodTitle": "14-Day Mood & Sleep Signal",
@@ -148,7 +171,7 @@
     },
     "noteLabel": "Reflection note (optional)",
     "notePlaceholder": "Write what is on your mind today...",
-    "physicalToggle": "Add physical wellbeing metrics (Pillar 05)",
+    "physicalToggle": "Add physical wellbeing metrics",
     "sleepQuality": "Sleep quality (1–5)",
     "sleepDuration": "Sleep duration (hours)",
     "energyLevel": "Energy level (1–5)",
@@ -239,6 +262,8 @@
     },
     "freeBadge": "Free / Subsidized",
     "eligibilityLabel": "Eligibility",
+    "verifiedLabel": "Verified",
+    "bookCta": "Book / Schedule",
     "callNow": "Call",
     "visitSite": "Visit",
     "confirmFollowup": "I contacted this service",
@@ -313,10 +338,41 @@
   "chat": {
     "title": "MentyMate Companion",
     "status": "Supportive AI (Non-clinical)",
+    "quotaRemaining": "{{remaining}}/{{limit}} left today",
     "welcome": "Hello! I'm MentyMate, your preventive mental wellbeing companion. How are you feeling today?",
     "placeholder": "Share what's on your mind...",
     "send": "Send",
     "consentPrompt": "Please grant AI Companion Chat consent in Privacy Settings to start chatting."
+  },
+  "try": {
+    "badge": "No Account Required",
+    "title": "2-Minute Wellbeing Preview",
+    "subtitle": "Try a quick mood check and PHQ-9 / GAD-7 self-screening locally in your browser. Nothing is sent to our servers.",
+    "moodTitle": "1. Quick Mood & Stress Snapshot",
+    "saveLocal": "Save Preview Locally",
+    "savedLocal": "Saved in your browser only.",
+    "screeningTitle": "2. Instant Self-Screening Preview",
+    "scoreAction": "See Preview Result",
+    "resultTitle": "Preview Result",
+    "ctaTitle": "Want 14-day clinician summaries, encrypted history & AI Companion?",
+    "ctaButton": "Create Free Account",
+    "loginButton": "Sign in"
+  },
+  "org": {
+    "label": "Organization / Campus Code (Optional)",
+    "placeholder": "e.g. CAMPUS-PILOT",
+    "filterPlaceholder": "Filter by cohort code (e.g. CAMPUS-PILOT)",
+    "filterApply": "Apply Cohort",
+    "filterClear": "All",
+    "activeCohort": "Cohort: {{code}}"
+  },
+  "reminder": {
+    "title": "Daily Check-in Reminder (Opt-in)",
+    "desc": "Receive a gentle browser notification when you open MentyMate to keep your 14-day wellbeing streak.",
+    "enableBtn": "Enable Reminder",
+    "disableBtn": "Disable Reminder",
+    "enabledStatus": "Daily reminder enabled on this device.",
+    "unsupported": "Browser notifications are not supported or were blocked on this device."
   },
   "blog": {
     "title": "Wellbeing & Prevention Resources",

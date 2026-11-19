@@ -5,6 +5,10 @@ import { useApi } from '../hooks/useApi';
 import { CustomModal } from '../components/ui/CustomModal';
 import { COUNTRIES } from '../config/language';
 
+/**
+ * User registration page with preferred language, country, and optional region setup.
+ * @returns {JSX.Element}
+ */
 export const RegisterPage = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
@@ -17,6 +21,7 @@ export const RegisterPage = () => {
     preferredLanguage: i18n.language === 'id' ? 'id' : 'en',
     country: 'ID',
     region: '',
+    orgCode: '',
   });
 
   const handleSubmit = async (e) => {
@@ -101,6 +106,19 @@ export const RegisterPage = () => {
               onChange={(e) => setForm({ ...form, region: e.target.value })}
               placeholder="Jabodetabek, Bandung..."
               className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-muted-foreground">
+              {t('org.label')}
+            </label>
+            <input
+              type="text"
+              value={form.orgCode}
+              onChange={(e) => setForm({ ...form, orgCode: e.target.value.toUpperCase() })}
+              placeholder={t('org.placeholder')}
+              className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm uppercase"
             />
           </div>
 

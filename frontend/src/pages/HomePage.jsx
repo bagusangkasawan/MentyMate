@@ -9,14 +9,23 @@ import {
   Activity,
   ClipboardCheck,
   Wind,
+  ShieldCheck,
+  Sparkles,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
+/**
+ * Landing page presenting the 4 intent cards, 6-pillar workflow, and FAQ accordion.
+ * @param {object} props
+ * @param {() => void} props.onOpenCrisis
+ * @returns {JSX.Element}
+ */
 export const HomePage = ({ onOpenCrisis }) => {
   const { t } = useTranslation();
   const [openFaq, setOpenFaq] = useState(0);
 
   const pillars = t('landing.pillars', { returnObjects: true }) || [];
+  const governanceItems = t('landing.governanceItems', { returnObjects: true }) || [];
   const faqs = t('landing.faqs', { returnObjects: true }) || [];
   const intents = t('landing.intents', { returnObjects: true }) || [];
 
@@ -55,6 +64,14 @@ export const HomePage = ({ onOpenCrisis }) => {
             >
               <HeartHandshake className="h-4 w-4 shrink-0" aria-hidden="true" />
               {t('landing.secondaryCta')}
+            </Link>
+
+            <Link
+              to="/try"
+              className="inline-flex min-h-[48px] w-full items-center justify-center gap-2 whitespace-nowrap rounded-full border border-primary/30 bg-accent-soft/70 px-6 py-3 text-sm font-semibold text-primary transition-transform hover:bg-accent-soft active:scale-[0.98] sm:w-auto"
+            >
+              <Sparkles className="h-4 w-4 shrink-0" aria-hidden="true" />
+              {t('landing.tryCta')}
             </Link>
           </div>
         </div>
@@ -213,6 +230,30 @@ export const HomePage = ({ onOpenCrisis }) => {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Safety & Clinical Governance Trust Signals */}
+      <section className="border-t border-border bg-surface-muted/40 py-14 sm:py-16">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <div className="flex items-center gap-2 text-primary">
+            <ShieldCheck className="h-5 w-5 shrink-0" aria-hidden="true" />
+            <h2 className="text-2xl font-bold text-foreground sm:text-3xl">
+              {t('landing.governanceTitle')}
+            </h2>
+          </div>
+          <p className="mt-2 max-w-2xl text-sm text-muted-foreground sm:text-base">
+            {t('landing.governanceSubtitle')}
+          </p>
+
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {governanceItems.map((item) => (
+              <div key={item.title} className="rounded-2xl border border-border bg-surface p-5">
+                <h3 className="text-sm font-bold text-foreground">{item.title}</h3>
+                <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">{item.desc}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>

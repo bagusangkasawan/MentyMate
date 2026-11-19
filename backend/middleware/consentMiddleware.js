@@ -4,11 +4,14 @@ const { resolveLanguage, t } = require('../utils/i18n');
 /**
  * Enforces granular user consent (Pillar 04) before accessing sensitive features.
  * @param {'aiChat' | 'moodTracking' | 'selfAssessment'} featureKey
+ * @returns {import('express').RequestHandler}
  */
 function requireConsent(featureKey) {
   return async (req, res, next) => {
     try {
-      const user = await User.findById(req.userId).select('consents preferredLanguage country region');
+      const user = await User.findById(req.userId).select(
+        'consents preferredLanguage country region orgCode aiChatUsage'
+      );
       if (!user) {
         const lang = resolveLanguage(req);
         return res.status(404).json({ error: t(lang, 'userNotFound'), message: t(lang, 'userNotFound') });

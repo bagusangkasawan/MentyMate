@@ -1,5 +1,11 @@
 import React from 'react';
 
+/**
+ * Crisp inline SVG flag icons (US & Indonesia) for the language switcher.
+ * @param {object} props
+ * @param {string} [props.className]
+ * @returns {JSX.Element}
+ */
 export const FlagUS = ({ className = 'h-3.5 w-5' }) => (
   <svg
     viewBox="0 0 24 16"

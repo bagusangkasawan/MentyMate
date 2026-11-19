@@ -1,5 +1,9 @@
 const mongoose = require('mongoose');
 
+/**
+ * PII-free telemetry event schema for tracking screening completion,
+ * referral follow-through, and safety guidance adoption on /impact.
+ */
 const analyticsEventSchema = new mongoose.Schema(
   {
     eventType: {
@@ -18,6 +22,7 @@ const analyticsEventSchema = new mongoose.Schema(
     },
     language: { type: String, enum: ['en', 'id'], default: 'en' },
     country: { type: String, default: 'ID', uppercase: true },
+    orgCode: { type: String, default: '', uppercase: true, trim: true, index: true },
     metadata: {
       instrument: { type: String, required: false },
       category: { type: String, required: false },

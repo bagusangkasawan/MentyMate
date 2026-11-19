@@ -12,18 +12,31 @@ import {
   CalendarCheck,
   ClipboardCheck,
   ShieldCheck,
-  LogOut,
+  Power,
   LogIn,
   PanelLeftClose,
   PanelLeftOpen,
+  Sparkles,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { setAppLanguage } from '../../i18n';
 import { FlagUS, FlagID, LanguageFlag } from '../ui/LanguageFlag';
+import { CustomModal } from '../ui/CustomModal';
 
+/**
+ * Responsive navigation shell: collapsible desktop sidebar, mobile header + bottom tab bar,
+ * EN/ID flag language switcher, and persistent Crisis Help trigger.
+ * @param {object} props
+ * @param {object|null} props.user
+ * @param {() => void} props.onLogout
+ * @param {() => void} props.onChatbotOpen
+ * @param {() => void} props.onOpenCrisis
+ * @returns {JSX.Element}
+ */
 export const Navbar = ({ user, onLogout, onChatbotOpen, onOpenCrisis }) => {
   const { t, i18n } = useTranslation();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [confirmLogout, setConfirmLogout] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
 
   const activeLang = i18n.language === 'id' ? 'id' : 'en';
@@ -38,9 +51,8 @@ export const Navbar = ({ user, onLogout, onChatbotOpen, onOpenCrisis }) => {
     { to: '/', label: t('nav.home'), icon: Home },
     { to: '/support', label: t('nav.support'), icon: HeartHandshake },
     { to: '/impact', label: t('nav.impact'), icon: BarChart3 },
-    ...(activeLang === 'id'
-      ? [{ to: '/blog', label: t('nav.articles'), icon: BookOpen }]
-      : []),
+    { to: '/blog', label: t('nav.articles'), icon: BookOpen },
+    ...(!user ? [{ to: '/try', label: t('nav.try'), icon: Sparkles }] : []),
     ...(user
       ? [
           { to: '/checkin', label: t('nav.checkin'), icon: CalendarCheck },
@@ -203,11 +215,11 @@ export const Navbar = ({ user, onLogout, onChatbotOpen, onOpenCrisis }) => {
               aria-label={t('common.signOut')}
               onClick={() => {
                 closeDrawer();
-                onLogout();
+                setConfirmLogout(true);
               }}
-              className="inline-flex min-h-[40px] w-full items-center justify-center gap-1.5 rounded-full border border-border px-3 py-2 text-xs font-semibold text-foreground hover:bg-surface-muted"
+              className="inline-flex min-h-[40px] w-full items-center justify-center gap-1.5 rounded-full bg-crisis px-3 py-2 text-xs font-semibold text-white transition-opacity hover:opacity-90"
             >
-              <LogOut className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+              <Power className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
               {!isCollapsed && <span>{t('common.signOut')}</span>}
             </button>
           ) : (
@@ -385,6 +397,22 @@ export const Navbar = ({ user, onLogout, onChatbotOpen, onOpenCrisis }) => {
           </button>
         </div>
       </nav>
+
+      <CustomModal
+        modal={{
+          show: confirmLogout,
+          title: t('common.signOut'),
+          message: t('common.signOutConfirm'),
+          confirmText: t('common.signOut'),
+          cancelText: t('common.cancel'),
+          isDestructive: true,
+          onConfirm: () => {
+            setConfirmLogout(false);
+            onLogout();
+          },
+          onCancel: () => setConfirmLogout(false),
+        }}
+      />
     </>
   );
 };

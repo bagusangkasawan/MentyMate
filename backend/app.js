@@ -1,3 +1,8 @@
+/**
+ * MentyMate Express 5 API application.
+ * Configures security headers (Helmet), multi-origin CORS, rate limiting,
+ * bilingual i18n routes, and auto-seeded local support directory on MongoDB connect.
+ */
 const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
@@ -58,7 +63,17 @@ app.use('/api', apiLimiter);
 app.use(express.json({ limit: '100kb' }));
 setupSwagger(app);
 
-// Health & config endpoint (exposes default language flag)
+/**
+ * @openapi
+ * /api/health:
+ *   get:
+ *     tags: [System]
+ *     summary: Health check and active default language flag
+ *     security: []
+ *     responses:
+ *       200:
+ *         description: Service health status
+ */
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'ok',

@@ -1,6 +1,10 @@
 const mongoose = require('mongoose');
 const crypto = require('crypto');
 
+/**
+ * Privacy-preserving safety incident log using a one-way SHA-256 `userHash`
+ * instead of raw user IDs or message content.
+ */
 const safetyIncidentSchema = new mongoose.Schema(
   {
     userHash: { type: String, required: false },

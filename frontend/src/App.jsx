@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useApi } from './hooks/useApi.js';
+import { withSessionCache, clearUserCache } from './utils/sessionCache.js';
 import { setAppLanguage } from './i18n';
 
 import { Navbar } from './components/layout/Navbar.jsx';
@@ -9,6 +10,7 @@ import { ChatbotModal } from './components/chatbot/ChatbotModal.jsx';
 import { CrisisSupportModal } from './components/safety/CrisisSupportModal.jsx';
 
 import { HomePage } from './pages/HomePage.jsx';
+import { TryPage } from './pages/TryPage.jsx';
 import { BlogPage } from './pages/BlogPage.jsx';
 import { CheckinPage } from './pages/CheckinPage.jsx';
 import { AssessmentPage } from './pages/AssessmentPage.jsx';
@@ -18,6 +20,11 @@ import { ImpactMetricsPage } from './pages/ImpactMetricsPage.jsx';
 import { LoginPage } from './pages/LoginPage.jsx';
 import { RegisterPage } from './pages/RegisterPage.jsx';
 
+/**
+ * Root application shell managing authentication state, routing, offline detection,
+ * AI Companion chat state, and global Crisis Support modal orchestration.
+ * @returns {JSX.Element}
+ */
 export default function App() {
   const { t, i18n } = useTranslation();
   const { callApi } = useApi();
@@ -48,6 +55,7 @@ export default function App() {
     const routeTitles = {
       '/': t('nav.home'),
       '/support': t('nav.support'),
+      '/try': t('nav.try'),
       '/impact': t('nav.impact'),
       '/blog': t('nav.articles'),
       '/checkin': t('nav.checkin'),
@@ -62,8 +70,10 @@ export default function App() {
       : `MentyMate | ${t('common.tagline')}`;
   }, [location.pathname, i18n.language, t]);
   const [isTyping, setIsTyping] = useState(false);
+  const [chatQuota, setChatQuota] = useState(null);
+  // Store a flag instead of static translated text so the greeting updates live when language switches.
   const [chatMessages, setChatMessages] = useState([
-    { sender: 'bot', content: t('chat.welcome'), isMarkdown: true },
+    { sender: 'bot', isWelcome: true, isMarkdown: true },
   ]);
 
   const [crisisModal, setCrisisModal] = useState({
@@ -88,12 +98,9 @@ export default function App() {
     }
     try {
       const country = user?.country || 'ID';
-      const data = await callApi(
-        `/chat/crisis-guidance?country=${country}`,
-        'GET',
-        null,
-        null,
-        { silent: true }
+      const lang = i18n.language === 'id' ? 'id' : 'en';
+      const data = await withSessionCache(`public:crisis:${country}:${lang}`, () =>
+        callApi(`/chat/crisis-guidance?country=${country}`, 'GET', null, null, { silent: true })
       );
       setCrisisModal({ isOpen: true, protocol: data, incidentId: null });
     } catch {
@@ -103,6 +110,8 @@ export default function App() {
   };
 
   const handleLogin = (newToken, userData) => {
+    // Purge any prior user-scoped cache before hydrating the new session.
+    clearUserCache();
     setToken(newToken);
     setUser(userData);
     sessionStorage.setItem('authToken', newToken);
@@ -114,11 +123,13 @@ export default function App() {
   };
 
   const handleLogout = () => {
+    clearUserCache();
     setToken(null);
     setUser(null);
     sessionStorage.removeItem('authToken');
     sessionStorage.removeItem('user');
-    setChatMessages([{ sender: 'bot', content: t('chat.welcome'), isMarkdown: true }]);
+    setChatMessages([{ sender: 'bot', isWelcome: true, isMarkdown: true }]);
+    setChatQuota(null);
     navigate('/');
   };
 
@@ -138,10 +149,14 @@ export default function App() {
         ...prev,
         { sender: 'bot', content: data.reply, isMarkdown: true },
       ]);
+      if (data.quota) setChatQuota(data.quota);
       if (data.isCrisis) {
         handleOpenCrisis(data.crisisProtocol, data.incidentId);
       }
     } catch (error) {
+      if (error.status === 429) {
+        setChatQuota({ limit: 15, remaining: 0 });
+      }
       if (error.status === 401) {
         setChatMessages((prev) => [
           ...prev,
@@ -203,6 +218,7 @@ export default function App() {
             }
           />
           <Route path="/support" element={<SupportPage user={user} />} />
+          <Route path="/try" element={<TryPage onOpenCrisis={() => handleOpenCrisis()} />} />
           <Route path="/impact" element={<ImpactMetricsPage />} />
           <Route path="/blog" element={<BlogPage />} />
           <Route path="/blog/:id" element={<BlogPage />} />
@@ -266,6 +282,7 @@ export default function App() {
         messages={chatMessages}
         onSendMessage={handleSendMessage}
         isTyping={isTyping}
+        quota={chatQuota}
         onNavigate={(path) => navigate(path)}
         onOpenCrisis={() => handleOpenCrisis()}
       />

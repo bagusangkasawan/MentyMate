@@ -1,9 +1,49 @@
+/**
+ * AI Companion chat controller with pre-LLM deterministic crisis interception
+ * and localized human crisis protocol endpoints.
+ */
 const { createChatCompletion } = require('../config/geminiClient');
+const User = require('../models/User');
 const SafetyIncident = require('../models/SafetyIncident');
 const AnalyticsEvent = require('../models/AnalyticsEvent');
 const { detectCrisisText, recordCrisisEscalation } = require('../services/crisisDetector');
 const { resolveLanguage, t } = require('../utils/i18n');
 
+const DAILY_CHAT_LIMIT = 15;
+
+/**
+ * Evaluates and increments a user's daily AI Companion message quota (UTC day).
+ * @param {{ date?: string, count?: number } | undefined} usage
+ * @param {string} [todayDate]
+ * @returns {{ allowed: boolean, nextUsage: { date: string, count: number }, limit: number, remaining: number }}
+ */
+function evaluateDailyChatQuota(usage, todayDate = new Date().toISOString().slice(0, 10)) {
+  const currentCount = usage?.date === todayDate ? Number(usage.count || 0) : 0;
+  if (currentCount >= DAILY_CHAT_LIMIT) {
+    return {
+      allowed: false,
+      nextUsage: { date: todayDate, count: currentCount },
+      limit: DAILY_CHAT_LIMIT,
+      remaining: 0,
+    };
+  }
+  const nextCount = currentCount + 1;
+  return {
+    allowed: true,
+    nextUsage: { date: todayDate, count: nextCount },
+    limit: DAILY_CHAT_LIMIT,
+    remaining: Math.max(0, DAILY_CHAT_LIMIT - nextCount),
+  };
+}
+
+exports.DAILY_CHAT_LIMIT = DAILY_CHAT_LIMIT;
+exports.evaluateDailyChatQuota = evaluateDailyChatQuota;
+
+/**
+ * Builds the non-clinical preventive wellbeing system prompt for the active language.
+ * @param {'en' | 'id'} lang
+ * @returns {string}
+ */
 function buildSystemPrompt(lang) {
   if (lang === 'id') {
     return (
@@ -52,6 +92,17 @@ exports.chatWithBot = async (req, res) => {
       });
     }
 
+    // Enforce daily AI quota after deterministic crisis check so safety escalations are never blocked.
+    const quotaResult = evaluateDailyChatQuota(user?.aiChatUsage);
+    if (!quotaResult.allowed) {
+      return res.status(429).json({
+        code: 'CHAT_QUOTA_EXCEEDED',
+        error: t(lang, 'chatQuotaExceeded'),
+        message: t(lang, 'chatQuotaExceeded'),
+        quota: { limit: quotaResult.limit, remaining: 0 },
+      });
+    }
+
     const payload = {
       messages: [
         { role: 'system', content: buildSystemPrompt(lang) },
@@ -69,7 +120,13 @@ exports.chatWithBot = async (req, res) => {
       return res.status(500).json({ error: t(lang, 'botError') });
     }
 
-    res.json({ reply: botReply, isCrisis: false });
+    await User.findByIdAndUpdate(req.userId, { aiChatUsage: quotaResult.nextUsage }).catch(() => {});
+
+    res.json({
+      reply: botReply,
+      isCrisis: false,
+      quota: { limit: quotaResult.limit, remaining: quotaResult.remaining },
+    });
   } catch (error) {
     console.error('Error in chatWithBot:', error.message);
     res.status(500).json({ error: t(lang, 'botError') });

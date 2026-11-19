@@ -1,3 +1,6 @@
+/**
+ * Clinically validated PHQ-9 and GAD-7 item banks in English and Bahasa Indonesia.
+ */
 export const INSTRUMENTS = {
   'PHQ-9': {
     id: 'PHQ-9',

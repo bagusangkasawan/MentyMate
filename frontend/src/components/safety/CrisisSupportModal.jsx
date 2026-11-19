@@ -2,6 +2,7 @@ import React from 'react';
 import { PhoneCall, ShieldAlert, ExternalLink, HeartHandshake, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { API_BASE_URL } from '../../config';
+import { useDismissableModal } from '../../hooks/useDismissableModal';
 
 const OFFLINE_FALLBACK = {
   en: {
@@ -47,6 +48,18 @@ const OFFLINE_FALLBACK = {
   },
 };
 
+/**
+ * Full-screen safety escalation modal with offline fallback helplines,
+ * optional safety-acknowledgment telemetry, and Escape/backdrop dismiss.
+ * @param {object} props
+ * @param {boolean} props.isOpen
+ * @param {() => void} props.onClose
+ * @param {object|null} [props.protocol]
+ * @param {string|null} [props.incidentId]
+ * @param {string|null} [props.token]
+ * @param {object|null} [props.trustedContact]
+ * @returns {JSX.Element|null}
+ */
 export const CrisisSupportModal = ({
   isOpen,
   onClose,
@@ -56,6 +69,7 @@ export const CrisisSupportModal = ({
   trustedContact,
 }) => {
   const { t, i18n } = useTranslation();
+  const handleBackdropClick = useDismissableModal(Boolean(isOpen), onClose);
   if (!isOpen) return null;
 
   const lang = i18n.language === 'id' ? 'id' : 'en';
@@ -81,6 +95,7 @@ export const CrisisSupportModal = ({
       role="dialog"
       aria-modal="true"
       aria-labelledby="crisis-modal-title"
+      onClick={handleBackdropClick}
       className="fixed inset-0 z-[1100] flex items-center justify-center bg-black/60 p-4"
     >
       <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-xl border border-crisis-border bg-surface shadow-2xl">

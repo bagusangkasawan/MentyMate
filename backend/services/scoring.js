@@ -1,5 +1,8 @@
 /**
  * Deterministic scoring for PHQ-9 (0-27) and GAD-7 (0-21).
+ * @param {'PHQ-9' | 'GAD-7'} type
+ * @param {number[]} answers
+ * @returns {{ totalScore: number, severityBand: string, item9Flag: boolean }}
  */
 function scoreAssessment(type, answers) {
   const expectedLength = type === 'PHQ-9' ? 9 : 7;
@@ -27,6 +30,9 @@ function scoreAssessment(type, answers) {
 
 /**
  * Computes personal baseline and recent trend from longitudinal assessments and check-ins.
+ * @param {Array<object>} [assessments=[]]
+ * @param {Array<object>} [checkins=[]]
+ * @returns {object}
  */
 function computeBaselineAndTrend(assessments = [], checkins = []) {
   const moodMap = { baik: 3, sedang: 2, buruk: 1 };

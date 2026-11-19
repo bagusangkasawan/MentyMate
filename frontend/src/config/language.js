@@ -4,6 +4,7 @@ export const SUPPORTED_LANGUAGES = ['en', 'id'];
  * Default language controlled by VITE_DEFAULT_LANGUAGE flag.
  * Set to 'en' (English-first) for international hackathon;
  * change VITE_DEFAULT_LANGUAGE=id to switch default to Bahasa Indonesia-first.
+ * @returns {'en' | 'id'}
  */
 export function getDefaultLanguage() {
   const flag = (import.meta.env.VITE_DEFAULT_LANGUAGE || 'en').toLowerCase().trim();

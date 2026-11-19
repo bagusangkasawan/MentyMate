@@ -2,9 +2,18 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PhoneCall, ExternalLink, Users, CheckCircle2 } from 'lucide-react';
 import { useApi } from '../hooks/useApi';
+import { useDismissableModal } from '../hooks/useDismissableModal';
+import { withSessionCache, removeCached } from '../utils/sessionCache';
 import { BreathingExercise } from '../components/support/BreathingExercise';
 import { WHATSAPP_COMMUNITY_URL, COUNTRIES } from '../config/language';
 
+/**
+ * Stepped care directory, guided 4-7-8 breathing, grounding tools, and peer community modal.
+ * Directory queries are cached per filter key in sessionStorage.
+ * @param {object} props
+ * @param {object|null} [props.user]
+ * @returns {JSX.Element}
+ */
 export const SupportPage = ({ user }) => {
   const { t, i18n } = useTranslation();
   const { callApi, loading } = useApi();
@@ -16,18 +25,19 @@ export const SupportPage = ({ user }) => {
   const [services, setServices] = useState([]);
   const [showPeerModal, setShowPeerModal] = useState(false);
   const [followupSentId, setFollowupSentId] = useState(null);
+  const handlePeerBackdropClick = useDismissableModal(showPeerModal, () => setShowPeerModal(false));
 
   const loadServices = useCallback(async () => {
-    const params = new URLSearchParams({
-      country,
-      region,
-      category,
-    });
+    const cacheKey = `public:support:services:${country}:${region}:${category}`;
+    const params = new URLSearchParams({ country, region, category });
     try {
-      const data = await callApi(`/support/services?${params.toString()}`, 'GET', null, null, {
-        silent: true,
+      const data = await withSessionCache(cacheKey, async () => {
+        const res = await callApi(`/support/services?${params.toString()}`, 'GET', null, null, {
+          silent: true,
+        });
+        return res || [];
       });
-      setServices(data || []);
+      setServices(data);
     } catch {
       setServices([]);
     }
@@ -39,6 +49,7 @@ export const SupportPage = ({ user }) => {
 
   const handleConfirmFollowup = async (serviceId, serviceCategory) => {
     setFollowupSentId(serviceId);
+    removeCached('public:impact:summary');
     await callApi(
       '/analytics/events',
       'POST',
@@ -213,6 +224,12 @@ export const SupportPage = ({ user }) => {
                       {lang === 'id' ? svc.eligibilityId : svc.eligibilityEn}
                     </p>
                   )}
+                  {svc.lastVerifiedAt && (
+                    <p className="mt-1.5 text-[11px] text-muted-foreground">
+                      {t('support.verifiedLabel')}:{' '}
+                      {new Date(svc.lastVerifiedAt).toLocaleDateString(lang === 'id' ? 'id-ID' : 'en-US')}
+                    </p>
+                  )}
                 </div>
 
                 <div className="mt-4 flex flex-col gap-2.5 border-t border-border pt-3 @sm:flex-row @sm:flex-wrap @sm:items-center @sm:justify-between">
@@ -224,6 +241,17 @@ export const SupportPage = ({ user }) => {
                       >
                         <PhoneCall className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                         <span>{svc.phone}</span>
+                      </a>
+                    )}
+                    {svc.bookingUrl && (
+                      <a
+                        href={svc.bookingUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex min-h-[40px] items-center gap-1.5 rounded-full border border-primary/40 bg-accent-soft px-4 py-1.5 text-xs font-semibold text-primary"
+                      >
+                        <span>{t('support.bookCta')}</span>
+                        <ExternalLink className="h-3 w-3 shrink-0" aria-hidden="true" />
                       </a>
                     )}
                     {svc.contactUrl && (
@@ -266,6 +294,7 @@ export const SupportPage = ({ user }) => {
         <div
           role="dialog"
           aria-modal="true"
+          onClick={handlePeerBackdropClick}
           className="fixed inset-0 z-[1050] flex items-center justify-center bg-black/50 p-4"
         >
           <div className="w-full max-w-md rounded-xl border border-border bg-surface p-6 shadow-xl">

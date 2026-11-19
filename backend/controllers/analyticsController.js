@@ -1,10 +1,20 @@
+/**
+ * PII-free analytics telemetry controller powering the /impact outcome dashboard.
+ */
 const AnalyticsEvent = require('../models/AnalyticsEvent');
 const SafetyIncident = require('../models/SafetyIncident');
 const Assessment = require('../models/Assessment');
+const User = require('../models/User');
 const { resolveLanguage, t } = require('../utils/i18n');
 
+/**
+ * Records a PII-free analytics event (e.g. screening_started, activity_used).
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ * @returns {Promise<void>}
+ */
 exports.recordEvent = async (req, res) => {
-  const { eventType, language, country, metadata } = req.body;
+  const { eventType, language, country, orgCode, metadata } = req.body;
   const lang = language || resolveLanguage(req);
 
   try {
@@ -12,6 +22,7 @@ exports.recordEvent = async (req, res) => {
       eventType,
       language: lang,
       country: (country || 'ID').toUpperCase(),
+      orgCode: (orgCode || '').toUpperCase().trim(),
       metadata,
     });
     res.status(201).json({ id: event._id, recorded: true });
@@ -20,13 +31,30 @@ exports.recordEvent = async (req, res) => {
   }
 };
 
+/**
+ * Aggregates screening completion, referral follow-through, crisis guidance adoption,
+ * symptom improvement, and language/geography parity metrics.
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ * @returns {Promise<void>}
+ */
 exports.getSummary = async (req, res) => {
   try {
+    const rawOrg = typeof req.query.orgCode === 'string' ? req.query.orgCode : '';
+    const activeOrgCode = rawOrg.trim().toUpperCase();
+    const eventMatch = activeOrgCode ? [{ $match: { orgCode: activeOrgCode } }] : [];
+
+    let assessmentMatch = [];
+    if (activeOrgCode) {
+      const orgUsers = await User.find({ orgCode: activeOrgCode }).select('_id').lean();
+      assessmentMatch = [{ $match: { userId: { $in: orgUsers.map((u) => u._id) } } }];
+    }
+
     const [eventCounts, langCounts, countryCounts, safetySummary, multiAssessments] =
       await Promise.all([
-        AnalyticsEvent.aggregate([{ $group: { _id: '$eventType', count: { $sum: 1 } } }]),
-        AnalyticsEvent.aggregate([{ $group: { _id: '$language', count: { $sum: 1 } } }]),
-        AnalyticsEvent.aggregate([{ $group: { _id: '$country', count: { $sum: 1 } } }]),
+        AnalyticsEvent.aggregate([...eventMatch, { $group: { _id: '$eventType', count: { $sum: 1 } } }]),
+        AnalyticsEvent.aggregate([...eventMatch, { $group: { _id: '$language', count: { $sum: 1 } } }]),
+        AnalyticsEvent.aggregate([...eventMatch, { $group: { _id: '$country', count: { $sum: 1 } } }]),
         SafetyIncident.aggregate([
           {
             $group: {
@@ -38,6 +66,7 @@ exports.getSummary = async (req, res) => {
           },
         ]),
         Assessment.aggregate([
+          ...assessmentMatch,
           { $sort: { createdAt: 1 } },
           {
             $group: {
@@ -78,6 +107,7 @@ exports.getSummary = async (req, res) => {
     const screeningCompleted = byType.screening_completed || 0;
 
     res.json({
+      activeOrgCode,
       outcomes: {
         screeningStarted,
         screeningCompleted,

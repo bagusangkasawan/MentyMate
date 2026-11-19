@@ -1,3 +1,7 @@
+/**
+ * Daily mood & physical-habit check-in controller with AES-256-GCM note encryption,
+ * daily Gemini coping suggestions, and 14-day clinician handover summaries.
+ */
 require('dotenv').config();
 const Checkin = require('../models/Checkin');
 const Assessment = require('../models/Assessment');
@@ -8,6 +12,12 @@ const { computeBaselineAndTrend } = require('../services/scoring');
 const { encryptText, decryptText } = require('../utils/crypto');
 const { resolveLanguage, t } = require('../utils/i18n');
 
+/**
+ * Records one check-in per user per day, running deterministic crisis checks before encrypting notes.
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ * @returns {Promise<void>}
+ */
 exports.checkin = async (req, res) => {
   const { mood, description = '', physicalMetrics } = req.body;
   const userId = req.userId;
@@ -58,6 +68,7 @@ exports.checkin = async (req, res) => {
       eventType: 'checkin_submitted',
       language: lang,
       country,
+      orgCode: user?.orgCode || '',
     }).catch(() => {});
 
     res.status(201).json({

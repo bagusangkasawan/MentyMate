@@ -2,10 +2,20 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ShieldCheck, Download, Trash2 } from 'lucide-react';
 import { useApi } from '../hooks/useApi';
+import { withSessionCache, patchCached, removeCached } from '../utils/sessionCache';
 import { setAppLanguage } from '../i18n';
 import { CustomModal } from '../components/ui/CustomModal';
 import { COUNTRIES } from '../config/language';
 
+/**
+ * Granular consent, profile localization, JSON export, and account deletion page.
+ * Patches cached privacy state on updates and invalidates gated feature caches when toggled.
+ * @param {object} props
+ * @param {string} props.token
+ * @param {(user: object) => void} [props.onUserUpdated]
+ * @param {() => void} props.onLogout
+ * @returns {JSX.Element}
+ */
 export const PrivacySettingsPage = ({ token, onUserUpdated, onLogout }) => {
   const { t } = useTranslation();
   const { callApi, loading, modal, setModal } = useApi();
@@ -17,16 +27,25 @@ export const PrivacySettingsPage = ({ token, onUserUpdated, onLogout }) => {
   });
   const [country, setCountry] = useState('ID');
   const [region, setRegion] = useState('');
+  const [orgCode, setOrgCode] = useState('');
   const [preferredLanguage, setPreferredLanguage] = useState('en');
   const [trustedContact, setTrustedContact] = useState({ name: '', phone: '', relationship: '' });
+  const [reminderEnabled, setReminderEnabled] = useState(
+    () => typeof window !== 'undefined' && localStorage.getItem('mentymate_reminder') === '1'
+  );
+  const [reminderNotice, setReminderNotice] = useState('');
   const [savedNotice, setSavedNotice] = useState('');
 
   const loadSettings = useCallback(async () => {
     try {
-      const data = await callApi('/privacy/consents', 'GET', null, token);
+      const data = await withSessionCache('user:privacy:settings', () =>
+        callApi('/privacy/consents', 'GET', null, token)
+      );
+      if (!data) return;
       if (data.consents) setConsents(data.consents);
       if (data.country) setCountry(data.country);
       if (data.region) setRegion(data.region);
+      if (data.orgCode !== undefined) setOrgCode(data.orgCode || '');
       if (data.preferredLanguage) setPreferredLanguage(data.preferredLanguage);
       if (data.trustedContact) setTrustedContact(data.trustedContact);
     } catch {
@@ -41,7 +60,12 @@ export const PrivacySettingsPage = ({ token, onUserUpdated, onLogout }) => {
   const handleToggleConsent = async (key) => {
     const nextVal = !consents[key]?.granted;
     const res = await callApi('/privacy/consents', 'PUT', { [key]: nextVal }, token);
-    if (res.consents) setConsents(res.consents);
+    if (res.consents) {
+      setConsents(res.consents);
+      patchCached('user:privacy:settings', { consents: res.consents });
+    }
+    if (key === 'moodTracking') removeCached('user:checkin:history');
+    if (key === 'selfAssessment') removeCached('user:assessments:data');
   };
 
   const handleSaveProfile = async (e) => {
@@ -49,13 +73,41 @@ export const PrivacySettingsPage = ({ token, onUserUpdated, onLogout }) => {
     const res = await callApi(
       '/auth/update-profile',
       'PUT',
-      { country, region, preferredLanguage, trustedContact },
+      { country, region, orgCode, preferredLanguage, trustedContact },
       token
     );
+    patchCached('user:privacy:settings', {
+      country,
+      region,
+      orgCode,
+      preferredLanguage,
+      trustedContact,
+    });
     setAppLanguage(preferredLanguage);
     onUserUpdated?.(res.user);
     setSavedNotice(t('common.save'));
     setTimeout(() => setSavedNotice(''), 2500);
+  };
+
+  const handleToggleReminder = async () => {
+    setReminderNotice('');
+    if (reminderEnabled) {
+      localStorage.removeItem('mentymate_reminder');
+      setReminderEnabled(false);
+      return;
+    }
+    if (typeof Notification === 'undefined') {
+      setReminderNotice(t('reminder.unsupported'));
+      return;
+    }
+    const perm = await Notification.requestPermission();
+    if (perm === 'granted') {
+      localStorage.setItem('mentymate_reminder', '1');
+      setReminderEnabled(true);
+      setReminderNotice(t('reminder.enabledStatus'));
+    } else {
+      setReminderNotice(t('reminder.unsupported'));
+    }
   };
 
   const handleExport = async () => {
@@ -118,7 +170,7 @@ export const PrivacySettingsPage = ({ token, onUserUpdated, onLogout }) => {
                   aria-checked={granted}
                   disabled={loading}
                   onClick={() => handleToggleConsent(key)}
-                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors disabled:opacity-60 ${
+                  className={`relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors disabled:opacity-60 ${
                     granted ? 'bg-primary' : 'bg-border'
                   }`}
                 >
@@ -177,6 +229,18 @@ export const PrivacySettingsPage = ({ token, onUserUpdated, onLogout }) => {
               className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
             />
           </div>
+          <div>
+            <label className="block text-xs font-semibold text-muted-foreground">
+              {t('org.label')}
+            </label>
+            <input
+              type="text"
+              value={orgCode}
+              onChange={(e) => setOrgCode(e.target.value.toUpperCase())}
+              placeholder={t('org.placeholder')}
+              className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm uppercase"
+            />
+          </div>
         </div>
 
         <h3 className="mt-6 text-sm font-bold text-foreground">{t('crisis.trustedContactTitle')}</h3>
@@ -217,6 +281,26 @@ export const PrivacySettingsPage = ({ token, onUserUpdated, onLogout }) => {
           {savedNotice && <span className="text-xs font-semibold text-success">{savedNotice}</span>}
         </div>
       </form>
+
+      {/* Opt-in Daily Check-in Reminder */}
+      <div className="rounded-2xl border border-border bg-surface p-4 sm:p-6">
+        <h2 className="text-lg font-bold text-foreground">{t('reminder.title')}</h2>
+        <p className="mt-1 text-xs text-muted-foreground">{t('reminder.desc')}</p>
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={handleToggleReminder}
+            className={`min-h-[40px] rounded-full px-5 py-2 text-xs font-semibold transition-colors ${
+              reminderEnabled
+                ? 'border border-border bg-background text-foreground hover:bg-surface-muted'
+                : 'bg-primary text-primary-foreground hover:bg-primary-hover'
+            }`}
+          >
+            {reminderEnabled ? t('reminder.disableBtn') : t('reminder.enableBtn')}
+          </button>
+          {reminderNotice && <span className="text-xs text-muted-foreground">{reminderNotice}</span>}
+        </div>
+      </div>
 
       {/* Data Export & Account Deletion */}
       <div className="rounded-2xl border border-border bg-surface p-4 sm:p-6">

@@ -2,6 +2,8 @@ const { resolveLanguage, t } = require('../utils/i18n');
 
 /**
  * Express middleware that validates req.body against a Zod schema.
+ * @param {import('zod').ZodTypeAny} schema
+ * @returns {import('express').RequestHandler}
  */
 function validate(schema) {
   return (req, res, next) => {

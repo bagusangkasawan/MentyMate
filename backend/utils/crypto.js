@@ -12,6 +12,8 @@ function getKey() {
 /**
  * Encrypts sensitive plaintext using AES-256-GCM when DATA_ENCRYPTION_KEY is set.
  * Returns plaintext unchanged when no key is configured (safe local dev fallback).
+ * @param {string} plaintext
+ * @returns {string}
  */
 function encryptText(plaintext) {
   if (!plaintext || typeof plaintext !== 'string') return plaintext;
@@ -30,6 +32,8 @@ function encryptText(plaintext) {
 
 /**
  * Decrypts AES-256-GCM ciphertext produced by encryptText.
+ * @param {string} value
+ * @returns {string}
  */
 function decryptText(value) {
   if (!value || typeof value !== 'string' || !value.startsWith(PREFIX)) {

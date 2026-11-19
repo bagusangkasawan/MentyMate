@@ -3,13 +3,29 @@ import { MessageCircle, Send, X, ShieldAlert } from 'lucide-react';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import { useTranslation } from 'react-i18next';
+import { useDismissableModal } from '../../hooks/useDismissableModal';
 
+/**
+ * AI Companion chat modal supporting live i18n welcome greeting, Escape/backdrop dismiss,
+ * and crisis shortcut escalation.
+ * @param {object} props
+ * @param {boolean} props.isOpen
+ * @param {() => void} props.onClose
+ * @param {Array<object>} props.messages
+ * @param {(message: string) => void} props.onSendMessage
+ * @param {boolean} props.isTyping
+ * @param {{ limit: number, remaining: number } | null} [props.quota]
+ * @param {(path: string) => void} props.onNavigate
+ * @param {() => void} props.onOpenCrisis
+ * @returns {JSX.Element|null}
+ */
 export const ChatbotModal = ({
   isOpen,
   onClose,
   messages,
   onSendMessage,
   isTyping,
+  quota,
   onNavigate,
   onOpenCrisis,
 }) => {
@@ -22,6 +38,8 @@ export const ChatbotModal = ({
       chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
     }
   }, [messages, isTyping]);
+
+  const handleBackdropClick = useDismissableModal(isOpen, onClose);
 
   const handleSend = () => {
     if (!isTyping && input.trim()) {
@@ -37,6 +55,7 @@ export const ChatbotModal = ({
       role="dialog"
       aria-modal="true"
       aria-label={t('chat.title')}
+      onClick={handleBackdropClick}
       className="fixed inset-x-0 top-0 bottom-[calc(57px+env(safe-area-inset-bottom))] z-30 flex items-end justify-center bg-black/50 sm:inset-0 sm:z-[1000] sm:items-center sm:p-4"
     >
       <div className="flex h-full w-full flex-col overflow-hidden bg-surface sm:h-[88vh] sm:max-h-[680px] sm:max-w-2xl sm:rounded-xl sm:border sm:border-border sm:shadow-2xl">
@@ -45,7 +64,10 @@ export const ChatbotModal = ({
             <MessageCircle className="h-5 w-5" aria-hidden="true" />
             <div>
               <h2 className="text-base font-bold">{t('chat.title')}</h2>
-              <p className="text-xs opacity-85">{t('chat.status')}</p>
+              <p className="text-xs opacity-85">
+                {t('chat.status')}
+                {quota ? ` · ${t('chat.quotaRemaining', { remaining: quota.remaining, limit: quota.limit })}` : ''}
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -71,6 +93,7 @@ export const ChatbotModal = ({
         <div ref={chatBoxRef} className="flex-grow space-y-3 overflow-y-auto bg-background p-5">
           {messages.map((msg, index) => {
             const isUser = msg.sender === 'user';
+            const content = msg.isWelcome ? t('chat.welcome') : msg.content;
             return (
               <div key={index} className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
                 <div
@@ -103,8 +126,8 @@ export const ChatbotModal = ({
                       className="prose prose-sm max-w-none text-foreground prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-li:text-foreground"
                       dangerouslySetInnerHTML={{
                         __html: msg.isMarkdown
-                          ? DOMPurify.sanitize(marked.parse(msg.content))
-                          : msg.content,
+                          ? DOMPurify.sanitize(marked.parse(content))
+                          : content,
                       }}
                     />
                   )}

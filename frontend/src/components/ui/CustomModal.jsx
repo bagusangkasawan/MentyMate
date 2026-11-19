@@ -1,6 +1,15 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { useDismissableModal } from '../../hooks/useDismissableModal';
 
+/**
+ * Shared dialog component. Notice-only modals dismiss on Escape/backdrop click,
+ * while confirmation dialogs (with confirmText/onConfirm) remain blocking.
+ * @param {object} props
+ * @param {object} [props.modal]
+ * @param {Function} [props.setModal]
+ * @returns {JSX.Element|null}
+ */
 export const CustomModal = ({
   modal,
   setModal,
@@ -15,17 +24,20 @@ export const CustomModal = ({
 }) => {
   const { t } = useTranslation();
 
-  const show = modal ? modal.show : propShow;
-  if (!show) return null;
-
-  const title = modal ? modal.title : propTitle;
-  const message = modal ? modal.message : propMessage;
+  const show = Boolean(modal ? modal.show : propShow);
   const confirmText = modal ? modal.confirmText : propConfirmText;
-  const cancelText = modal ? modal.cancelText : propCancelText;
   const onClose = modal
     ? modal.onClose || (() => setModal?.({ show: false }))
     : propOnClose;
   const onConfirm = modal ? modal.onConfirm : propOnConfirm;
+  const isDismissable = show && !confirmText && !onConfirm;
+  const handleBackdropClick = useDismissableModal(isDismissable, onClose);
+
+  if (!show) return null;
+
+  const title = modal ? modal.title : propTitle;
+  const message = modal ? modal.message : propMessage;
+  const cancelText = modal ? modal.cancelText : propCancelText;
   const onCancel = modal ? modal.onCancel : propOnCancel;
   const isDestructive = modal ? Boolean(modal.isDestructive) : false;
 
@@ -33,6 +45,7 @@ export const CustomModal = ({
     <div
       role="dialog"
       aria-modal="true"
+      onClick={handleBackdropClick}
       className="fixed inset-0 z-[1050] flex items-center justify-center bg-black/50 p-4"
     >
       <div className="w-full max-w-md rounded-xl border border-border bg-surface p-6 shadow-xl">

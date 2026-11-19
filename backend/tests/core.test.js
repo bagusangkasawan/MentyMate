@@ -1,3 +1,7 @@
+/**
+ * Automated unit tests for deterministic crisis detection, PHQ-9/GAD-7 scoring,
+ * baseline trends, AES-256-GCM encryption, and DEFAULT_LANGUAGE i18n resolution.
+ */
 const test = require('node:test');
 const assert = require('node:assert/strict');
 
@@ -6,6 +10,7 @@ const { scoreAssessment, computeBaselineAndTrend } = require('../services/scorin
 const { getCrisisProtocol } = require('../data/crisisTemplates');
 const { getDefaultLanguage, resolveLanguage } = require('../utils/i18n');
 const { encryptText, decryptText } = require('../utils/crypto');
+const { evaluateDailyChatQuota, DAILY_CHAT_LIMIT } = require('../controllers/chatController');
 
 test('Crisis detector triggers on EN and ID high-risk phrases without false positives', () => {
   const enHit = detectCrisisText('I feel like I want to kill myself tonight');
@@ -92,4 +97,16 @@ test('Field-level encryption round-trips plaintext when DATA_ENCRYPTION_KEY is s
   assert.ok(encrypted.startsWith('enc:v1:'));
   assert.equal(decryptText(encrypted), note);
   delete process.env.DATA_ENCRYPTION_KEY;
+});
+
+test('Daily AI chat quota enforces limit and resets cleanly on a new UTC day', () => {
+  const today = '2026-11-17';
+  const fresh = evaluateDailyChatQuota({ date: '2026-11-16', count: DAILY_CHAT_LIMIT }, today);
+  assert.equal(fresh.allowed, true);
+  assert.equal(fresh.nextUsage.count, 1);
+  assert.equal(fresh.remaining, DAILY_CHAT_LIMIT - 1);
+
+  const blocked = evaluateDailyChatQuota({ date: today, count: DAILY_CHAT_LIMIT }, today);
+  assert.equal(blocked.allowed, false);
+  assert.equal(blocked.remaining, 0);
 });

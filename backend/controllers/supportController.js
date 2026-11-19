@@ -1,7 +1,16 @@
+/**
+ * Stepped local support directory controller for filtering verified helplines and clinics.
+ */
 const SupportService = require('../models/SupportService');
 const AnalyticsEvent = require('../models/AnalyticsEvent');
 const { resolveLanguage, t } = require('../utils/i18n');
 
+/**
+ * Lists support services matching optional country, region, category, and language filters.
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ * @returns {Promise<void>}
+ */
 exports.listServices = async (req, res) => {
   const { country, region, category, lang } = req.query;
   const activeLang = resolveLanguage(req);

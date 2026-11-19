@@ -1,18 +1,30 @@
+/**
+ * Granular consent management, full JSON user data export, and permanent account deletion.
+ */
 const User = require('../models/User');
 const Checkin = require('../models/Checkin');
 const Assessment = require('../models/Assessment');
 const { decryptText } = require('../utils/crypto');
 const { resolveLanguage, t } = require('../utils/i18n');
 
+/**
+ * Returns the authenticated user's consent toggles, locale, and trusted contact.
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ * @returns {Promise<void>}
+ */
 exports.getConsents = async (req, res) => {
   try {
-    const user = await User.findById(req.userId).select('consents preferredLanguage country region trustedContact');
+    const user = await User.findById(req.userId).select(
+      'consents preferredLanguage country region orgCode trustedContact'
+    );
     if (!user) return res.status(404).json({ error: t(resolveLanguage(req), 'userNotFound') });
     res.json({
       consents: user.consents,
       preferredLanguage: user.preferredLanguage,
       country: user.country,
       region: user.region,
+      orgCode: user.orgCode || '',
       trustedContact: user.trustedContact,
     });
   } catch (err) {

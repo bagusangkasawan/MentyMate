@@ -4,9 +4,23 @@ import { Printer, Activity } from 'lucide-react';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import { useApi } from '../hooks/useApi';
+import {
+  getCached,
+  withSessionCache,
+  removeCached,
+  removeCachedByPrefix,
+} from '../utils/sessionCache';
 import { ConsentGate } from '../components/privacy/ConsentGate';
 import { CustomModal } from '../components/ui/CustomModal';
 
+/**
+ * Daily mood & physical habit check-in with encrypted notes, AI reflection,
+ * and 14-day clinician handover summary. Caches user reads per session.
+ * @param {object} props
+ * @param {string} props.token
+ * @param {(protocol: object, incidentId: string) => void} props.onTriggerCrisis
+ * @returns {JSX.Element}
+ */
 export const CheckinPage = ({ token, onTriggerCrisis }) => {
   const { t, i18n } = useTranslation();
   const { loading, callApi, modal, setModal } = useApi();
@@ -23,28 +37,39 @@ export const CheckinPage = ({ token, onTriggerCrisis }) => {
     physicalActivityMinutes: 20,
     stressLevel: 3,
   });
-  const [history, setHistory] = useState([]);
-  const [recommendation, setRecommendation] = useState('');
-  const [recommendationLang, setRecommendationLang] = useState('');
-  const [summary, setSummary] = useState(null);
-
   const activeLang = i18n.language === 'id' ? 'id' : 'en';
+  const [history, setHistory] = useState(() => getCached('user:checkin:history') || []);
+  const [recommendation, setRecommendation] = useState(
+    () => getCached(`user:checkin:recommendation:${activeLang}`) || ''
+  );
+  const [recommendationLang, setRecommendationLang] = useState(() =>
+    getCached(`user:checkin:recommendation:${activeLang}`) ? activeLang : ''
+  );
+  const [summary, setSummary] = useState(() => getCached('user:checkin:summary'));
+
   const startOfToday = new Date();
   startOfToday.setHours(0, 0, 0, 0);
   const hasCheckedInToday = history.some((c) => new Date(c.date) >= startOfToday);
 
-  const loadHistory = useCallback(async () => {
-    try {
-      const data = await callApi('/checkin', 'GET', null, token, { silent: true });
-      setHistory(data || []);
-      setConsentRequired(false);
-    } catch (err) {
-      if (err.code === 'CONSENT_REQUIRED') setConsentRequired(true);
-    }
-  }, [callApi, token]);
+  const loadHistory = useCallback(
+    async (force = false) => {
+      try {
+        const list = await withSessionCache(
+          'user:checkin:history',
+          async () => (await callApi('/checkin', 'GET', null, token, { silent: true })) || [],
+          { force }
+        );
+        setHistory(list);
+        setConsentRequired(false);
+      } catch (err) {
+        if (err.code === 'CONSENT_REQUIRED') setConsentRequired(true);
+      }
+    },
+    [callApi, token]
+  );
 
   useEffect(() => {
-    loadHistory();
+    loadHistory(false);
   }, [loadHistory]);
 
   const handleSubmit = (e) => {
@@ -69,11 +94,13 @@ export const CheckinPage = ({ token, onTriggerCrisis }) => {
           setRecommendation('');
           setRecommendationLang('');
           setSummary(null);
+          removeCachedByPrefix('user:checkin:');
+          removeCached('public:impact:summary');
           setModal({ show: true, title: t('common.appName'), message: t('checkin.savedMsg') });
           if (res.isCrisis) {
             onTriggerCrisis(res.crisisProtocol, res.incidentId);
           }
-          await loadHistory();
+          await loadHistory(true);
         } catch (err) {
           if (err.code === 'CONSENT_REQUIRED') setConsentRequired(true);
         }
@@ -87,8 +114,14 @@ export const CheckinPage = ({ token, onTriggerCrisis }) => {
     if (!hasCheckedInToday || loading) return;
     if (recommendation && recommendationLang === activeLang) return;
     try {
-      const data = await callApi('/checkin/recommendation', 'GET', null, token);
-      setRecommendation(data.recommendation || '');
+      const rec = await withSessionCache(
+        `user:checkin:recommendation:${activeLang}`,
+        async () => {
+          const data = await callApi('/checkin/recommendation', 'GET', null, token);
+          return data.recommendation || '';
+        }
+      );
+      setRecommendation(rec);
       setRecommendationLang(activeLang);
     } catch {
       // handled
@@ -99,7 +132,9 @@ export const CheckinPage = ({ token, onTriggerCrisis }) => {
     setTab('summary');
     if (summary || loading) return;
     try {
-      const data = await callApi('/checkin/wellbeing-summary', 'GET', null, token);
+      const data = await withSessionCache('user:checkin:summary', () =>
+        callApi('/checkin/wellbeing-summary', 'GET', null, token)
+      );
       setSummary(data);
     } catch {
       // handled
@@ -109,7 +144,7 @@ export const CheckinPage = ({ token, onTriggerCrisis }) => {
   if (consentRequired) {
     return (
       <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
-        <ConsentGate featureKey="moodTracking" token={token} onGranted={loadHistory} />
+        <ConsentGate featureKey="moodTracking" token={token} onGranted={() => loadHistory(true)} />
       </div>
     );
   }

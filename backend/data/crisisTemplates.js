@@ -1,3 +1,8 @@
+/**
+ * Pre-reviewed static bilingual (EN/ID) crisis protocols and emergency contacts
+ * by country (ID, AE/Abu Dhabi, US, GB, GLOBAL). Used by deterministic crisis escalation
+ * so acute disclosures never rely on unvalidated LLM text.
+ */
 const EMERGENCY_CONTACTS_BY_COUNTRY = {
   ID: [
     {

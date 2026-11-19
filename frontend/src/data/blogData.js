@@ -1,14 +1,137 @@
-import React from 'react';
-
+/**
+ * Bilingual (EN/ID) psychoeducation articles displayed on /blog.
+ */
 export const blogData = [
-    {
-        id: 'judi-online',
+  {
+    id: 'workplace-burnout-en',
+    lang: 'en',
+    categories: ['Workplace Wellbeing', 'Burnout'],
+    date: 'November 2026',
+    title: 'Recognizing Early Burnout Before It Disrupts Sleep and Focus',
+    excerpt:
+      'Persistent exhaustion, cynicism, and Sunday-night dread are early warning signals. Learn how to track mood alongside sleep and stress before escalating to care.',
+    author: 'MentyMate',
+    readTime: '4 min read',
+    content: `
+      <p>Burnout rarely happens overnight. For working-age adults (18-45), it often builds silently through shortened sleep, skipped physical movement, and unrelenting mental load.</p>
+      <h2>Three Early Signals to Track</h2>
+      <ul>
+        <li><strong>Sleep-energy mismatch:</strong> Sleeping 7+ hours yet waking up drained.</li>
+        <li><strong>Emotional flattening:</strong> Feeling detached from work and hobbies you normally enjoy.</li>
+        <li><strong>Physical tension:</strong> Tight shoulders, headaches, or afternoon irritability.</li>
+      </ul>
+      <h2>Preparing for a Primary-Care Check-in</h2>
+      <p>Bringing a structured 14-day summary of sleep, energy, stress, and PHQ-9/GAD-7 scores helps your doctor or counselor understand patterns in minutes rather than relying on memory.</p>
+    `,
+  },
+  {
+    id: 'sleep-mood-connection-en',
+    lang: 'en',
+    categories: ['Sleep & Habits', 'Prevention'],
+    date: 'November 2026',
+    title: 'How 4-7-8 Breathing and Sleep Consistency Calm Nighttime Anxiety',
+    excerpt:
+      'Racing thoughts at 2 a.m. keep your nervous system in fight-or-flight. Practical steps to down-regulate and know when to seek human support.',
+    author: 'MentyMate',
+    readTime: '3 min read',
+    content: `
+      <p>Sleep disruption and anxiety reinforce each other. A single poor night raises next-day stress sensitivity, while elevated evening cortisol delays deep sleep.</p>
+      <h2>Down-Regulating in 90 Seconds</h2>
+      <p>Slow, extended exhales (such as 4-7-8 breathing) stimulate the parasympathetic nervous system and lower heart rate variability strain without any equipment or internet connection.</p>
+      <h2>When Self-Care Isn't Enough</h2>
+      <p>If sleep trouble persists for more than two weeks alongside low mood or worry, use a validated PHQ-9 or GAD-7 screening and connect with a local primary-care clinic or tele-counselor.</p>
+    `,
+  },
+  {
+    id: 'understanding-phq9-gad7-en',
+    lang: 'en',
+    categories: ['Clinical Literacy', 'Screening'],
+    date: 'November 2026',
+    title: 'Understanding Your PHQ-9 & GAD-7 Scores (Without Self-Diagnosing)',
+    excerpt:
+      'What screening bands mean, why Question 9 matters for safety, and how stepped care matches you to the right level of human support.',
+    author: 'MentyMate',
+    readTime: '4 min read',
+    content: `
+      <p>PHQ-9 and GAD-7 are two of the most widely validated mental health screening questionnaires used by general practitioners worldwide. They measure symptom frequency over the past two weeks, not a permanent medical label.</p>
+      <h2>Stepped Care Based on Need</h2>
+      <ul>
+        <li><strong>Minimal to Mild:</strong> Daily reflection, sleep hygiene, guided breathing, and peer support.</li>
+        <li><strong>Moderate:</strong> Primary-care consultation or licensed counselor using your 14-day handover summary.</li>
+        <li><strong>Moderately Severe to Severe (or any self-harm thought):</strong> Immediate human support via local helplines or clinical specialists.</li>
+      </ul>
+    `,
+  },
+  {
+    id: 'digital-habits-impulse-en',
+    lang: 'en',
+    categories: ['Digital Wellbeing', 'Impulse Control'],
+    date: 'November 2026',
+    title: 'Breaking Late-Night Doomscrolling and Compulsive Digital Loops',
+    excerpt:
+      'Variable-reward feeds and late-night betting or gaming apps spike dopamine crashes and next-day anxiety. Practical friction steps that actually stick.',
+    author: 'MentyMate',
+    readTime: '4 min read',
+    content: `
+      <p>Compulsive late-night scrolling, online gambling, or endless short-form video loops often start as stress relief, yet leave your brain overstimulated and depleted by morning.</p>
+      <h2>Three Friction Habits That Work</h2>
+      <ul>
+        <li><strong>Device parking:</strong> Charge your phone outside arm's reach 45 minutes before sleep.</li>
+        <li><strong>Urge surfing:</strong> Wait 10 minutes while running a 4-7-8 breathing cycle before acting on an impulse.</li>
+        <li><strong>Spot the trigger:</strong> Log stress and mood in under 60 seconds to see whether boredom, loneliness, or work pressure drives the urge.</li>
+      </ul>
+    `,
+  },
+  {
+    id: 'preparing-for-first-therapy-en',
+    lang: 'en',
+    categories: ['Care Navigation', 'Primary Care'],
+    date: 'November 2026',
+    title: 'What to Bring to Your First GP or Counseling Appointment',
+    excerpt:
+      'Walking into a clinic without knowing what to say is a major barrier. How a structured 14-day wellbeing summary makes your first visit clearer.',
+    author: 'MentyMate',
+    readTime: '3 min read',
+    content: `
+      <p>Many adults delay seeing a doctor or counselor simply because they don't know how to explain weeks of fluctuating stress, sleep trouble, and low energy in a 15-minute visit.</p>
+      <h2>Four Things Clinicians Find Most Helpful</h2>
+      <ul>
+        <li><strong>Timeline:</strong> When sleep or mood shifts started.</li>
+        <li><strong>Physical context:</strong> Average sleep hours, energy levels, and daily movement.</li>
+        <li><strong>Validated scores:</strong> Recent PHQ-9 or GAD-7 totals to establish a clear baseline.</li>
+        <li><strong>Your goal:</strong> Better sleep, coping tools, or exploring formal therapy.</li>
+      </ul>
+    `,
+  },
+  {
+    id: 'supporting-someone-in-distress-en',
+    lang: 'en',
+    categories: ['Peer & Family', 'Safety'],
+    date: 'November 2026',
+    title: 'How to Support a Friend or Colleague Without Overstepping',
+    excerpt:
+      'Practical phrases that invite honesty, boundaries that protect both of you, and when to offer direct crisis helpline options.',
+    author: 'MentyMate',
+    readTime: '4 min read',
+    content: `
+      <p>When someone close to you seems withdrawn or overwhelmed, you don't need clinical training to help: calm presence and reliable signposting matter most.</p>
+      <h2>Do's and Don'ts</h2>
+      <ul>
+        <li><strong>Do listen first:</strong> "I've noticed you seem exhausted lately. Do you want to talk, or just take a walk?"</li>
+        <li><strong>Don't minimize:</strong> Avoid "others have it worse" or rushing to fix their problem.</li>
+        <li><strong>Do share safe options:</strong> Offer confidential local helplines or a quick non-account wellbeing preview if they aren't ready for a clinic yet.</li>
+      </ul>
+    `,
+  },
+  {
+    id: 'judi-online',
+    lang: 'id',
         img: 'https://th.bing.com/th/id/OIP.bcqQpaZb6xruV7oHN-GhHgHaE8?rs=1&pid=ImgDetMain',
         categories: ['Judi Online', 'Kesehatan Mental'],
         date: '15 Agustus 2025',
         title: 'Dampak Judi Online pada Kesehatan Mental dan Cara Mengatasinya',
         excerpt: 'Judi online dapat menimbulkan dampak serius pada kesehatan mental termasuk kecemasan, depresi, dan kecanduan. Pelajari tanda-tanda dan cara mengatasinya.',
-        author: 'Dr. Anita Wijaya',
+        author: 'Tim Editorial MentyMate',
         readTime: '8 menit',
         content: `
             <p>Perkembangan teknologi dan akses internet yang semakin luas telah membuka pintu bagi berbagai aktivitas online, termasuk judi online. Meskipun mungkin tampak sebagai hiburan yang tidak berbahaya, judi online dapat menimbulkan dampak serius bagi kesehatan mental. Artikel ini akan membahas dampak judi online terhadap kesehatan mental dan memberikan strategi untuk mengatasinya.</p>
@@ -36,7 +159,7 @@ export const blogData = [
         date: '10 Agustus 2025',
         title: 'Mengenali Tanda-tanda Kecanduan dalam Diri dan Orang Terdekat',
         excerpt: 'Kecanduan dapat bersembunyi di balik kebiasaan sehari-hari. Pelajari cara mengenali tanda-tanda peringatan dini dan pentingnya intervensi awal.',
-        author: 'Dr. Budi Santoso',
+        author: 'Tim Editorial MentyMate',
         readTime: '7 menit',
         content: `
             <p>Kecanduan adalah kondisi kompleks yang dapat memengaruhi siapa saja. Mengenali tanda-tanda awal sangat penting untuk intervensi dini dan pemulihan yang efektif. Artikel ini membahas gejala umum kecanduan dan langkah-langkah untuk mengatasinya.</p>
@@ -64,7 +187,7 @@ export const blogData = [
         date: '5 Agustus 2025',
         title: '5 Teknik Mindfulness untuk Mengatasi Kecemasan dan Stres secara Efektif',
         excerpt: 'Praktik mindfulness bisa menjadi alat efektif untuk mengelola kecemasan dan stres. Pelajari 5 teknik sederhana yang dapat dilakukan sehari-hari.',
-        author: 'Dr. Siti Nurhaliza',
+        author: 'Tim Editorial MentyMate',
         readTime: '6 menit',
         content: `
             <p>Mindfulness adalah teknik yang efektif untuk mengelola stres dan kecemasan. Berikut lima teknik sederhana yang dapat Anda praktikkan sehari-hari.</p>
@@ -88,7 +211,7 @@ export const blogData = [
         date: '1 Agustus 2025',
         title: 'Memahami Gangguan Kecemasan: Jenis, Gejala, dan Penanganannya',
         excerpt: 'Gangguan kecemasan adalah kondisi umum yang dapat mempengaruhi kualitas hidup. Pelajari berbagai jenis, gejala, dan cara penanganannya.',
-        author: 'Dr. Ahmad Fauzi',
+        author: 'Tim Editorial MentyMate',
         readTime: '8 menit',
         content: `
             <p>Gangguan kecemasan adalah kondisi mental yang umum namun sering disalahpahami. Artikel ini membahas jenis-jenis gangguan kecemasan, gejala, dan cara penanganannya.</p>
@@ -123,7 +246,7 @@ export const blogData = [
         date: '25 Juli 2025',
         title: 'Perjalanan Rehabilitasi: Tahapan Pemulihan dari Kecanduan',
         excerpt: 'Pemulihan dari kecanduan adalah sebuah perjalanan yang penuh tantangan, bukan sekadar tujuan. Pelajari tahapan-tahapan penting dalam proses rehabilitasi dan faktor pendukung keberhasilan.',
-        author: 'Dr. Rina Kurniawati',
+        author: 'Tim Editorial MentyMate',
         readTime: '7 menit',
         content: `
             <p>Rehabilitasi adalah proses penting dalam pemulihan dari kecanduan. Artikel ini membahas tahap-tahap rehabilitasi dan bagaimana dukungan yang tepat dapat mempercepat proses penyembuhan.</p>
@@ -150,7 +273,7 @@ export const blogData = [
         date: '20 Juli 2025',
         title: 'Peran Dukungan Keluarga dalam Proses Pemulihan Kesehatan Mental',
         excerpt: 'Dukungan keluarga sangat penting dalam proses pemulihan kesehatan mental. Pelajari cara mendukung anggota keluarga yang sedang berjuang dengan masalah kesehatan mental.',
-        author: 'Dr. Tania Maharani',
+        author: 'Tim Editorial MentyMate',
         readTime: '6 menit',
         content: `
             <p>Kesehatan mental adalah fondasi penting dalam kehidupan seseorang, dan peran keluarga dalam menjaga dan mendukung kesehatan mental tidak dapat diremehkan. Kehadiran keluarga yang peduli dan memahami dapat mempercepat proses pemulihan dan meningkatkan kualitas hidup penderita gangguan mental.</p>

@@ -3,6 +3,7 @@ const SUPPORTED_LANGUAGES = ['en', 'id'];
 /**
  * Returns the platform default language controlled by DEFAULT_LANGUAGE flag.
  * Defaults to 'en' (English-first) and can be switched to 'id' via env flag.
+ * @returns {'en' | 'id'}
  */
 function getDefaultLanguage() {
   const flag = (process.env.DEFAULT_LANGUAGE || 'en').toLowerCase().trim();
@@ -10,10 +11,10 @@ function getDefaultLanguage() {
 }
 
 /**
- * Resolves the active language for a request:
- * 1. Explicit query/header/body override if supported
- * 2. Authenticated user's preferredLanguage
- * 3. Platform DEFAULT_LANGUAGE flag
+ * Resolves the active language for a request from query/header/body, user preference, or env flag.
+ * @param {import('express').Request} req
+ * @param {object|null} [user=null]
+ * @returns {'en' | 'id'}
  */
 function resolveLanguage(req, user = null) {
   const candidates = [
@@ -53,6 +54,7 @@ const MESSAGES = {
     messageRequired: 'Message is required.',
     botError: 'Unable to process chat response right now.',
     rateLimitExceeded: 'Too many requests, please try again later.',
+    chatQuotaExceeded: 'Daily AI companion message limit (15/day) reached. Self-guided tools and crisis support remain unlimited.',
     validationFailed: 'Invalid request payload.',
   },
   id: {
@@ -72,10 +74,17 @@ const MESSAGES = {
     messageRequired: 'Pesan wajib diisi.',
     botError: 'Gagal berkomunikasi dengan chatbot saat ini.',
     rateLimitExceeded: 'Terlalu banyak permintaan, coba lagi nanti.',
+    chatQuotaExceeded: 'Batas harian pesan Pendamping AI (15 pesan/hari) telah tercapai. Layanan mandiri dan bantuan krisis tetap tersedia tanpa batas.',
     validationFailed: 'Data input tidak valid.',
   },
 };
 
+/**
+ * Looks up a localized backend response message by key.
+ * @param {'en' | 'id'} lang
+ * @param {string} key
+ * @returns {string}
+ */
 function t(lang, key) {
   const safeLang = SUPPORTED_LANGUAGES.includes(lang) ? lang : getDefaultLanguage();
   return MESSAGES[safeLang]?.[key] || MESSAGES.en[key] || key;

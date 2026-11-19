@@ -2,9 +2,18 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ClipboardCheck, TrendingUp } from 'lucide-react';
 import { useApi } from '../hooks/useApi';
+import { getCached, withSessionCache, removeCached } from '../utils/sessionCache';
 import { INSTRUMENTS } from '../data/instruments';
 import { ConsentGate } from '../components/privacy/ConsentGate';
 
+/**
+ * Validated PHQ-9 & GAD-7 self-assessment page with baseline trends.
+ * Caches assessment history/insights per session and invalidates on new submissions.
+ * @param {object} props
+ * @param {string} props.token
+ * @param {(protocol: object, incidentId: string) => void} props.onTriggerCrisis
+ * @returns {JSX.Element}
+ */
 export const AssessmentPage = ({ token, onTriggerCrisis }) => {
   const { t, i18n } = useTranslation();
   const { callApi, loading } = useApi();
@@ -13,28 +22,38 @@ export const AssessmentPage = ({ token, onTriggerCrisis }) => {
   const [instrument, setInstrument] = useState('PHQ-9');
   const [answers, setAnswers] = useState(Array(9).fill(0));
   const [consentRequired, setConsentRequired] = useState(false);
-  const [insights, setInsights] = useState(null);
-  const [history, setHistory] = useState([]);
+  const [insights, setInsights] = useState(() => getCached('user:assessments:data')?.insights || null);
+  const [history, setHistory] = useState(() => getCached('user:assessments:data')?.history || []);
   const [latestResult, setLatestResult] = useState(null);
 
-  const loadData = useCallback(async () => {
-    try {
-      const [ins, hist] = await Promise.all([
-        callApi('/assessments/insights', 'GET', null, token, { silent: true }),
-        callApi('/assessments', 'GET', null, token, { silent: true }),
-      ]);
-      setInsights(ins);
-      setHistory(hist || []);
-      setConsentRequired(false);
-    } catch (err) {
-      if (err.code === 'CONSENT_REQUIRED') {
-        setConsentRequired(true);
+  const loadData = useCallback(
+    async (force = false) => {
+      try {
+        const data = await withSessionCache(
+          'user:assessments:data',
+          async () => {
+            const [ins, hist] = await Promise.all([
+              callApi('/assessments/insights', 'GET', null, token, { silent: true }),
+              callApi('/assessments', 'GET', null, token, { silent: true }),
+            ]);
+            return { insights: ins, history: hist || [] };
+          },
+          { force }
+        );
+        setInsights(data.insights || null);
+        setHistory(data.history || []);
+        setConsentRequired(false);
+      } catch (err) {
+        if (err.code === 'CONSENT_REQUIRED') {
+          setConsentRequired(true);
+        }
       }
-    }
-  }, [callApi, token]);
+    },
+    [callApi, token]
+  );
 
   useEffect(() => {
-    loadData();
+    loadData(false);
   }, [loadData]);
 
   const handleInstrumentChange = (next) => {
@@ -59,10 +78,12 @@ export const AssessmentPage = ({ token, onTriggerCrisis }) => {
         token
       );
       setLatestResult(res.assessment);
+      removeCached('user:assessments:data');
+      removeCached('public:impact:summary');
       if (res.isCrisis) {
         onTriggerCrisis(res.crisisProtocol, res.incidentId);
       }
-      await loadData();
+      await loadData(true);
     } catch (err) {
       if (err.code === 'CONSENT_REQUIRED') {
         setConsentRequired(true);
@@ -73,7 +94,7 @@ export const AssessmentPage = ({ token, onTriggerCrisis }) => {
   if (consentRequired) {
     return (
       <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
-        <ConsentGate featureKey="selfAssessment" token={token} onGranted={loadData} />
+        <ConsentGate featureKey="selfAssessment" token={token} onGranted={() => loadData(true)} />
       </div>
     );
   }

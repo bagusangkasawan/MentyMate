@@ -42,6 +42,11 @@ function detectCrisisText(text) {
 
 /**
  * Checks PHQ-9 / GAD-7 assessment outputs for crisis escalation triggers.
+ * @param {object} params
+ * @param {'PHQ-9' | 'GAD-7'} params.type
+ * @param {number} params.totalScore
+ * @param {number[]} params.answers
+ * @returns {{ triggered: boolean, severity: 'imminent' | 'high' | 'moderate' | null, triggerType: 'phq9_item9' | 'score_threshold' | null }}
  */
 function detectCrisisAssessment({ type, totalScore, answers }) {
   if (type === 'PHQ-9') {
@@ -67,6 +72,14 @@ function detectCrisisAssessment({ type, totalScore, answers }) {
 
 /**
  * Shared helper to log a minimized SafetyIncident, emit analytics, and return the crisis protocol.
+ * @param {object} params
+ * @param {string} params.userId
+ * @param {'chat' | 'checkin' | 'phq9' | 'gad7'} params.source
+ * @param {'imminent' | 'high' | 'moderate'} params.severity
+ * @param {'keyword' | 'phq9_item9' | 'score_threshold'} params.triggerType
+ * @param {'en' | 'id'} params.language
+ * @param {string} params.country
+ * @returns {Promise<{ crisisProtocol: object, incidentId: any }>}
  */
 async function recordCrisisEscalation({ userId, source, severity, triggerType, language, country }) {
   const crisisProtocol = getCrisisProtocol(language, country);

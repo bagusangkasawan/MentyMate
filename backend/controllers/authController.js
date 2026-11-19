@@ -1,10 +1,19 @@
+/**
+ * Authentication and user localization/emergency-contact profile controller.
+ */
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { getDefaultLanguage, resolveLanguage, t } = require('../utils/i18n');
 
+/**
+ * Registers a new user with bcrypt-hashed password and default language/country preferences.
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ * @returns {Promise<void>}
+ */
 exports.register = async (req, res) => {
-  const { username, password, phone, preferredLanguage, country, region } = req.body;
+  const { username, password, phone, preferredLanguage, country, region, orgCode } = req.body;
   const lang = preferredLanguage || resolveLanguage(req);
 
   try {
@@ -19,6 +28,7 @@ exports.register = async (req, res) => {
       preferredLanguage: preferredLanguage || getDefaultLanguage(),
       country: (country || 'ID').toUpperCase(),
       region: region || '',
+      orgCode: (orgCode || '').toUpperCase(),
     });
 
     await user.save();
@@ -68,7 +78,7 @@ exports.getMe = async (req, res) => {
 exports.updateProfile = async (req, res) => {
   const lang = resolveLanguage(req);
   try {
-    const { username, password, phone, preferredLanguage, country, region, trustedContact } = req.body;
+    const { username, password, phone, preferredLanguage, country, region, orgCode, trustedContact } = req.body;
     const updates = {};
 
     const user = await User.findById(req.userId);
@@ -88,6 +98,7 @@ exports.updateProfile = async (req, res) => {
     if (preferredLanguage) updates.preferredLanguage = preferredLanguage;
     if (country) updates.country = country.toUpperCase();
     if (region !== undefined) updates.region = region;
+    if (orgCode !== undefined) updates.orgCode = orgCode.toUpperCase();
     if (trustedContact) updates.trustedContact = trustedContact;
 
     if (Object.keys(updates).length === 0) {

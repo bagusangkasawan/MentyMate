@@ -1,26 +1,63 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Clock, User } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import DOMPurify from 'dompurify';
 import { blogData } from '../data/blogData';
+import { updateSeoMeta, clearDynamicJsonLd } from '../utils/seo';
 
+/**
+ * Psychoeducation article index and detail view rendered with DOMPurify-sanitized HTML.
+ * @returns {JSX.Element}
+ */
 export const BlogPage = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { id } = useParams();
+  const activeLang = i18n.language === 'id' ? 'id' : 'en';
+  const visibleArticles = blogData.filter((a) => (a.lang || 'id') === activeLang);
+  const backLabel = activeLang === 'id' ? 'Kembali ke Edukasi' : 'Back to Resources';
+  const notFoundLabel = activeLang === 'id' ? 'Artikel tidak ditemukan.' : 'Article not found.';
+  const readMoreLabel = activeLang === 'id' ? 'Baca selengkapnya' : 'Read more';
+  const activeArticle = id ? blogData.find((a) => a.id === id) : null;
+
+  useEffect(() => {
+    if (activeArticle) {
+      updateSeoMeta({
+        title: `${activeArticle.title} | MentyMate`,
+        description: activeArticle.excerpt,
+        path: `/blog/${activeArticle.id}`,
+        jsonLd: {
+          '@context': 'https://schema.org',
+          '@type': 'Article',
+          headline: activeArticle.title,
+          description: activeArticle.excerpt,
+          inLanguage: activeArticle.lang || 'id',
+          author: { '@type': 'Organization', name: activeArticle.author || 'MateGroup' },
+          publisher: { '@type': 'Organization', name: 'MateGroup', url: 'https://mentymate.mategroup.id' },
+        },
+      });
+    } else {
+      updateSeoMeta({
+        title: `${t('nav.articles')} | MentyMate`,
+        description: t('blog.subtitle'),
+        path: '/blog',
+      });
+    }
+    return () => clearDynamicJsonLd();
+  }, [activeArticle, t]);
 
   if (id) {
-    const article = blogData.find((a) => a.id === id);
+    const article = activeArticle;
     if (!article) {
       return (
         <div className="mx-auto max-w-3xl space-y-4 px-4 py-12 sm:px-6">
-          <p className="text-sm text-muted-foreground">Artikel tidak ditemukan.</p>
+          <p className="text-sm text-muted-foreground">{notFoundLabel}</p>
           <Link
             to="/blog"
             className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
           >
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-            Kembali ke Edukasi
+            {backLabel}
           </Link>
         </div>
       );
@@ -33,7 +70,7 @@ export const BlogPage = () => {
           className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
         >
           <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-          Kembali ke Edukasi
+          {backLabel}
         </Link>
 
         <article className="overflow-hidden rounded-xl border border-border bg-surface">
@@ -93,7 +130,7 @@ export const BlogPage = () => {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
-        {blogData.map((article) => (
+        {visibleArticles.map((article) => (
           <Link
             key={article.id}
             to={`/blog/${article.id}`}
@@ -115,7 +152,7 @@ export const BlogPage = () => {
             </div>
 
             <div className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-primary">
-              <span>Baca selengkapnya</span>
+              <span>{readMoreLabel}</span>
               <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
             </div>
           </Link>

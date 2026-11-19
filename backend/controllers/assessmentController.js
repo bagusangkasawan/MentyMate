@@ -1,3 +1,7 @@
+/**
+ * PHQ-9 & GAD-7 self-assessment controller with deterministic scoring,
+ * crisis escalation checks, and longitudinal baseline insights.
+ */
 const Assessment = require('../models/Assessment');
 const Checkin = require('../models/Checkin');
 const AnalyticsEvent = require('../models/AnalyticsEvent');
@@ -5,6 +9,12 @@ const { scoreAssessment, computeBaselineAndTrend } = require('../services/scorin
 const { detectCrisisAssessment, recordCrisisEscalation } = require('../services/crisisDetector');
 const { resolveLanguage, t } = require('../utils/i18n');
 
+/**
+ * Scores and stores a PHQ-9 or GAD-7 submission and returns crisis protocol if triggered.
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ * @returns {Promise<void>}
+ */
 exports.submitAssessment = async (req, res) => {
   const { type, answers } = req.body;
   const user = req.currentUser;
@@ -27,6 +37,7 @@ exports.submitAssessment = async (req, res) => {
       eventType: 'screening_completed',
       language: lang,
       country,
+      orgCode: user?.orgCode || '',
       metadata: { instrument: type },
     }).catch(() => {});
 

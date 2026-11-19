@@ -21,8 +21,13 @@ function getClient() {
 
 /**
  * Calls Google Gemini (@google/genai) generateContentStream with ThinkingLevel.MINIMAL
- * and Google Search grounding, returning an OpenAI-compatible response shape
- * ({ choices: [{ message: { content } }] }).
+ * and Google Search grounding, returning an OpenAI-compatible response shape.
+ * @param {object} params
+ * @param {Array<{role: string, content: string}>} [params.messages=[]]
+ * @param {number} [params.max_tokens=1024]
+ * @param {number} [params.temperature=0.7]
+ * @param {number} [params.top_p=1]
+ * @returns {Promise<{choices: Array<{message: {content: string}}>}>}
  */
 async function createChatCompletion({
   messages = [],

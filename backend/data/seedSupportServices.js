@@ -1,5 +1,9 @@
 const SupportService = require('../models/SupportService');
 
+/**
+ * Seeded stepped-care support directory covering Indonesia, Abu Dhabi/UAE, US, UK, and Global.
+ * Idempotently populates MongoDB on startup when the collection is empty.
+ */
 const SEED_SERVICES = [
   {
     name: 'Layanan Darurat Nasional 112',

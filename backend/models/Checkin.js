@@ -1,5 +1,10 @@
 const mongoose = require('mongoose');
 
+/**
+ * Daily mood and optional physical-habit check-in schema.
+ * Reflection `description` is encrypted at rest via AES-256-GCM when configured,
+ * and `aiRecommendation` caches daily Gemini suggestions per language.
+ */
 const physicalMetricsSchema = new mongoose.Schema(
   {
     sleepQuality: { type: Number, min: 1, max: 5, required: false },

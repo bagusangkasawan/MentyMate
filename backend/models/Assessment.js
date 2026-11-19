@@ -1,5 +1,9 @@
 const mongoose = require('mongoose');
 
+/**
+ * Validated PHQ-9 (0-27) and GAD-7 (0-21) self-assessment record,
+ * including deterministic severity band and PHQ-9 Item 9 self-harm flag.
+ */
 const assessmentSchema = new mongoose.Schema(
   {
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },

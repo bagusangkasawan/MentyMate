@@ -61,6 +61,18 @@
   button, a, [role="button"] {
     touch-action: manipulation;
   }
+
+  /* Restore pointer cursor on interactive buttons/controls (Tailwind v4 Preflight sets default). */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  a[href] {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  [aria-disabled="true"] {
+    cursor: not-allowed;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

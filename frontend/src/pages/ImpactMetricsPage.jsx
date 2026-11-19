@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   BarChart3,
@@ -10,24 +11,53 @@ import {
   Lock,
 } from 'lucide-react';
 import { useApi } from '../hooks/useApi';
+import { getCached, withSessionCache } from '../utils/sessionCache';
 
+const IMPACT_CACHE_TTL_MS = 5 * 60 * 1000;
+
+/**
+ * Public PII-free outcome dashboard. Caches summary in sessionStorage (5m TTL)
+ * per cohort code to minimize serverless cold-start calls; manual refresh bypasses the cache.
+ * @returns {JSX.Element}
+ */
 export const ImpactMetricsPage = () => {
   const { t } = useTranslation();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeOrg = (searchParams.get('orgCode') || '').trim().toUpperCase();
+  const [orgInput, setOrgInput] = useState(activeOrg);
   const { callApi, loading } = useApi();
-  const [summary, setSummary] = useState(null);
 
-  const loadSummary = useCallback(async () => {
-    try {
-      const data = await callApi('/analytics/summary', 'GET', null, null, { silent: true });
-      setSummary(data);
-    } catch {
-      setSummary(null);
-    }
-  }, [callApi]);
+  const cacheKey = `public:impact:summary:${activeOrg || 'ALL'}`;
+  const [summary, setSummary] = useState(() => getCached(cacheKey, IMPACT_CACHE_TTL_MS));
+
+  const loadSummary = useCallback(
+    async (force = false) => {
+      const endpoint = activeOrg
+        ? `/analytics/summary?orgCode=${encodeURIComponent(activeOrg)}`
+        : '/analytics/summary';
+      try {
+        const data = await withSessionCache(
+          cacheKey,
+          () => callApi(endpoint, 'GET', null, null, { silent: true }),
+          { force, maxAgeMs: IMPACT_CACHE_TTL_MS }
+        );
+        setSummary(data);
+      } catch {
+        setSummary(null);
+      }
+    },
+    [callApi, activeOrg, cacheKey]
+  );
 
   useEffect(() => {
-    loadSummary();
+    loadSummary(false);
   }, [loadSummary]);
+
+  const handleApplyOrg = (e) => {
+    e.preventDefault();
+    const cleaned = orgInput.trim().toUpperCase();
+    setSearchParams(cleaned ? { orgCode: cleaned } : {});
+  };
 
   const enCount = summary?.languageAccessibility?.en || 0;
   const idCount = summary?.languageAccessibility?.id || 0;
@@ -58,7 +88,7 @@ export const ImpactMetricsPage = () => {
 
         <button
           type="button"
-          onClick={loadSummary}
+          onClick={() => loadSummary(true)}
           disabled={loading}
           className="inline-flex min-h-[40px] w-full items-center justify-center gap-2 rounded-full border border-border bg-surface px-4 py-2 text-xs font-semibold text-foreground transition-colors hover:bg-surface-muted disabled:opacity-60 sm:w-auto"
         >
@@ -66,6 +96,40 @@ export const ImpactMetricsPage = () => {
           <span>{t('impact.refresh')}</span>
         </button>
       </div>
+
+      {/* Optional B2B2C Cohort Filter */}
+      <form onSubmit={handleApplyOrg} className="flex flex-wrap items-center gap-2">
+        <input
+          type="text"
+          value={orgInput}
+          onChange={(e) => setOrgInput(e.target.value.toUpperCase())}
+          placeholder={t('org.filterPlaceholder')}
+          className="min-h-[38px] w-full rounded-full border border-border bg-surface px-4 py-1.5 text-xs uppercase sm:w-64"
+        />
+        <button
+          type="submit"
+          className="min-h-[38px] rounded-full bg-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary-hover"
+        >
+          {t('org.filterApply')}
+        </button>
+        {activeOrg && (
+          <button
+            type="button"
+            onClick={() => {
+              setOrgInput('');
+              setSearchParams({});
+            }}
+            className="min-h-[38px] rounded-full border border-border bg-surface px-3.5 py-1.5 text-xs font-semibold text-muted-foreground hover:bg-surface-muted"
+          >
+            {t('org.filterClear')}
+          </button>
+        )}
+        {activeOrg && (
+          <span className="rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-primary">
+            {t('org.activeCohort', { code: activeOrg })}
+          </span>
+        )}
+      </form>
 
       {loading && !summary ? (
         <div className="rounded-2xl border border-border bg-surface p-8 text-center text-sm text-muted-foreground">

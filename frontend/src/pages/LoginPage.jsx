@@ -5,6 +5,12 @@ import { useApi } from '../hooks/useApi';
 import { CustomModal } from '../components/ui/CustomModal';
 import { setAppLanguage } from '../i18n';
 
+/**
+ * User sign-in page that syncs preferred language and hydrates the session profile.
+ * @param {object} props
+ * @param {(token: string, user: object) => void} props.onLogin
+ * @returns {JSX.Element}
+ */
 export const LoginPage = ({ onLogin }) => {
   const { t } = useTranslation();
   const { loading, callApi, modal, setModal } = useApi();

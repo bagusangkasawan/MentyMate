@@ -2,6 +2,11 @@ import { useState, useCallback } from 'react';
 import { API_BASE_URL } from '../config/index';
 import i18n from '../i18n';
 
+/**
+ * Shared fetch hook injecting `x-language` and Bearer JWT headers,
+ * with centralized error modal state and memoized `callApi` identity.
+ * @returns {{ loading: boolean, callApi: Function, modal: object, setModal: Function }}
+ */
 export const useApi = () => {
   const [loading, setLoading] = useState(false);
   const [modal, setModal] = useState({ show: false, title: '', message: '' });

@@ -2,7 +2,17 @@ import React, { useState } from 'react';
 import { ShieldCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useApi } from '../../hooks/useApi';
+import { removeCached } from '../../utils/sessionCache';
 
+/**
+ * Inline opt-in gate shown when a feature requires explicit user consent.
+ * Invalidates cached privacy settings upon grant so /privacy stays in sync.
+ * @param {object} props
+ * @param {'aiChat' | 'moodTracking' | 'selfAssessment'} props.featureKey
+ * @param {string} props.token
+ * @param {() => void} [props.onGranted]
+ * @returns {JSX.Element}
+ */
 export const ConsentGate = ({ featureKey, token, onGranted }) => {
   const { t } = useTranslation();
   const { callApi, loading } = useApi();
@@ -12,6 +22,7 @@ export const ConsentGate = ({ featureKey, token, onGranted }) => {
     setError('');
     try {
       await callApi('/privacy/consents', 'PUT', { [featureKey]: true }, token);
+      removeCached('user:privacy:settings');
       onGranted?.();
     } catch (err) {
       setError(err.message);

@@ -8,6 +8,13 @@ const PHASES = [
   { key: 'exhale', seconds: 8 },
 ];
 
+/**
+ * Offline-capable guided 4-7-8 breathing exercise that auto-completes after one full cycle
+ * and notifies `onCompleteCycle` via ref to avoid stale closures.
+ * @param {object} props
+ * @param {() => void} [props.onCompleteCycle]
+ * @returns {JSX.Element}
+ */
 export const BreathingExercise = ({ onCompleteCycle }) => {
   const { t, i18n } = useTranslation();
   const [running, setRunning] = useState(false);

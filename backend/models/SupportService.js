@@ -1,5 +1,9 @@
 const mongoose = require('mongoose');
 
+/**
+ * Localized stepped-care directory entry (helplines, primary care, clinicians)
+ * with transparent bilingual eligibility and cost metadata.
+ */
 const supportServiceSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
@@ -25,6 +29,8 @@ const supportServiceSchema = new mongoose.Schema(
     eligibilityId: { type: String, default: '' },
     descriptionEn: { type: String, default: '' },
     descriptionId: { type: String, default: '' },
+    bookingUrl: { type: String, default: '' },
+    lastVerifiedAt: { type: Date, default: Date.now },
   },
   { timestamps: true }
 );
