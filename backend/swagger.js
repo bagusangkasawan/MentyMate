@@ -34,7 +34,18 @@ const options = {
   ],
 };
 
-const swaggerSpec = swaggerJSDoc(options);
+let cachedSwaggerSpec = null;
+
+/**
+ * Lazily compiles and caches the OpenAPI specification on first docs request.
+ * @returns {object}
+ */
+function getSwaggerSpec() {
+  if (!cachedSwaggerSpec) {
+    cachedSwaggerSpec = swaggerJSDoc(options);
+  }
+  return cachedSwaggerSpec;
+}
 
 const swaggerHtml = `<!DOCTYPE html>
 <html lang="en">
@@ -119,7 +130,7 @@ function setupSwagger(app) {
   app.get('/api/docs.json', requireSwaggerAuth, (req, res) => {
     const activeServerUrl = process.env.SERVER_URL || `${req.protocol}://${req.get('host')}`;
     res.json({
-      ...swaggerSpec,
+      ...getSwaggerSpec(),
       servers: [{ url: activeServerUrl }],
     });
   });

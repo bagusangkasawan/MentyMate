@@ -50,35 +50,46 @@ exports.getSummary = async (req, res) => {
       assessmentMatch = [{ $match: { userId: { $in: orgUsers.map((u) => u._id) } } }];
     }
 
-    const [eventCounts, langCounts, countryCounts, safetySummary, multiAssessments] =
-      await Promise.all([
-        AnalyticsEvent.aggregate([...eventMatch, { $group: { _id: '$eventType', count: { $sum: 1 } } }]),
-        AnalyticsEvent.aggregate([...eventMatch, { $group: { _id: '$language', count: { $sum: 1 } } }]),
-        AnalyticsEvent.aggregate([...eventMatch, { $group: { _id: '$country', count: { $sum: 1 } } }]),
-        SafetyIncident.aggregate([
-          {
-            $group: {
-              _id: null,
-              totalIncidents: { $sum: 1 },
-              guidanceShown: { $sum: { $cond: ['$guidanceShown', 1, 0] } },
-              guidanceCompleted: { $sum: { $cond: ['$guidanceCompleted', 1, 0] } },
-            },
+    const [eventFacets, safetySummary, multiAssessments] = await Promise.all([
+      AnalyticsEvent.aggregate([
+        ...eventMatch,
+        {
+          $facet: {
+            byType: [{ $group: { _id: '$eventType', count: { $sum: 1 } } }],
+            byLang: [{ $group: { _id: '$language', count: { $sum: 1 } } }],
+            byCountry: [{ $group: { _id: '$country', count: { $sum: 1 } } }],
           },
-        ]),
-        Assessment.aggregate([
-          ...assessmentMatch,
-          { $sort: { createdAt: 1 } },
-          {
-            $group: {
-              _id: { userId: '$userId', type: '$type' },
-              firstScore: { $first: '$totalScore' },
-              latestScore: { $last: '$totalScore' },
-              count: { $sum: 1 },
-            },
+        },
+      ]),
+      SafetyIncident.aggregate([
+        {
+          $group: {
+            _id: null,
+            totalIncidents: { $sum: 1 },
+            guidanceShown: { $sum: { $cond: ['$guidanceShown', 1, 0] } },
+            guidanceCompleted: { $sum: { $cond: ['$guidanceCompleted', 1, 0] } },
           },
-          { $match: { count: { $gte: 2 } } },
-        ]),
-      ]);
+        },
+      ]),
+      Assessment.aggregate([
+        ...assessmentMatch,
+        { $sort: { createdAt: 1 } },
+        {
+          $group: {
+            _id: { userId: '$userId', type: '$type' },
+            firstScore: { $first: '$totalScore' },
+            latestScore: { $last: '$totalScore' },
+            count: { $sum: 1 },
+          },
+        },
+        { $match: { count: { $gte: 2 } } },
+      ]),
+    ]);
+
+    const facet = eventFacets[0] || {};
+    const eventCounts = facet.byType || [];
+    const langCounts = facet.byLang || [];
+    const countryCounts = facet.byCountry || [];
 
     const byType = Object.fromEntries(eventCounts.map((e) => [e._id, e.count]));
     const byLanguage = Object.fromEntries(langCounts.map((l) => [l._id, l.count]));

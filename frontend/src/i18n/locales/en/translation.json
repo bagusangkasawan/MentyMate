@@ -158,7 +158,9 @@
     "loginBtn": "Sign in",
     "registerBtn": "Create account",
     "noAccount": "New to MentyMate?",
-    "hasAccount": "Already have an account?"
+    "hasAccount": "Already have an account?",
+    "welcomeTitle": "Welcome back, {{username}}",
+    "welcomeBody": "We are glad you are here. Take a gentle moment to check in with yourself today. You are in a safe, private space."
   },
   "checkin": {
     "title": "Daily Mood & Physical Check-in",

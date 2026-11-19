@@ -8,6 +8,7 @@ import { setAppLanguage } from './i18n';
 import { Navbar } from './components/layout/Navbar.jsx';
 import { ChatbotModal } from './components/chatbot/ChatbotModal.jsx';
 import { CrisisSupportModal } from './components/safety/CrisisSupportModal.jsx';
+import { CustomModal } from './components/ui/CustomModal.jsx';
 
 import { HomePage } from './pages/HomePage.jsx';
 import { TryPage } from './pages/TryPage.jsx';
@@ -27,7 +28,7 @@ import { RegisterPage } from './pages/RegisterPage.jsx';
  */
 export default function App() {
   const { t, i18n } = useTranslation();
-  const { callApi } = useApi();
+  const { callApi, modal, setModal } = useApi();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -120,6 +121,11 @@ export default function App() {
       setAppLanguage(userData.preferredLanguage);
     }
     navigate('/checkin');
+    setModal({
+      show: true,
+      title: t('auth.welcomeTitle', { username: userData?.username || '' }),
+      message: t('auth.welcomeBody'),
+    });
   };
 
   const handleLogout = () => {
@@ -303,6 +309,8 @@ export default function App() {
         token={token}
         trustedContact={user?.trustedContact}
       />
+
+      <CustomModal modal={modal} setModal={setModal} />
     </div>
   );
 }

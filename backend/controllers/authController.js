@@ -50,10 +50,14 @@ exports.login = async (req, res) => {
     if (!isMatch) return res.status(401).json({ message: t(lang, 'invalidCredentials') });
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    const safeUser = user.toObject();
+    delete safeUser.password;
+
     res.json({
       token,
       preferredLanguage: user.preferredLanguage,
       country: user.country,
+      user: safeUser,
     });
   } catch (err) {
     console.error(err);
@@ -64,7 +68,7 @@ exports.login = async (req, res) => {
 exports.getMe = async (req, res) => {
   const lang = resolveLanguage(req);
   try {
-    const user = await User.findById(req.userId).select('-password');
+    const user = await User.findById(req.userId).select('-password').lean();
     if (!user) {
       return res.status(404).json({ message: t(lang, 'userNotFound') });
     }

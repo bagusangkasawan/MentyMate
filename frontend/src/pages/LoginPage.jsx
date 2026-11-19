@@ -24,7 +24,7 @@ export const LoginPage = ({ onLogin }) => {
       if (data.preferredLanguage) {
         setAppLanguage(data.preferredLanguage);
       }
-      const profile = await callApi('/auth/me', 'GET', null, data.token);
+      const profile = data.user || (await callApi('/auth/me', 'GET', null, data.token));
       onLogin(data.token, profile);
     } catch {
       // handled by useApi

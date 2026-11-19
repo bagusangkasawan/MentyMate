@@ -18,7 +18,6 @@ const supportRoutes = require('./routes/supportRoutes');
 const privacyRoutes = require('./routes/privacyRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
 const setupSwagger = require('./swagger');
-const { ensureSupportServicesSeeded } = require('./data/seedSupportServices');
 const { getDefaultLanguage, resolveLanguage, t } = require('./utils/i18n');
 
 dotenv.config();
@@ -82,10 +81,7 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Serverless-safe cached MongoDB connection (awaited per request before DB routes)
-let dbPromise = null;
-let seeded = false;
-
+// Serverless-safe cached MongoDB connection on globalThis (awaited per request before DB routes)
 /**
  * Ensures MongoDB is connected before handling database-backed requests in serverless environments.
  * Reconnects automatically if a frozen serverless container lost its socket.
@@ -97,36 +93,27 @@ async function ensureDbConnected() {
     throw new Error('MONGO_URI environment variable is not configured.');
   }
 
-  // 1 = connected
   if (mongoose.connection.readyState === 1) return;
 
-  // If not currently connecting (2), clear any stale resolved promise from a dropped connection
   if (mongoose.connection.readyState !== 2) {
-    dbPromise = null;
+    globalThis.__mentymateDbPromise = null;
   }
 
-  if (!dbPromise) {
-    dbPromise = mongoose
+  if (!globalThis.__mentymateDbPromise) {
+    globalThis.__mentymateDbPromise = mongoose
       .connect(mongoUri, {
         serverSelectionTimeoutMS: 5000,
-        maxPoolSize: 10,
-      })
-      .then(async (conn) => {
-        console.log(`MongoDB connected database: ${conn.connection.name}`);
-        if (!seeded) {
-          seeded = true;
-          await ensureSupportServicesSeeded();
-        }
-        return conn;
+        maxPoolSize: 5,
+        minPoolSize: 1,
       })
       .catch((err) => {
-        dbPromise = null;
+        globalThis.__mentymateDbPromise = null;
         console.error('MongoDB connection error:', err.message);
         throw err;
       });
   }
 
-  await dbPromise;
+  await globalThis.__mentymateDbPromise;
 }
 
 const requireDb = async (req, res, next) => {

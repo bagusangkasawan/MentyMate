@@ -158,7 +158,9 @@
     "loginBtn": "Masuk",
     "registerBtn": "Buat akun",
     "noAccount": "Belum punya akun?",
-    "hasAccount": "Sudah punya akun?"
+    "hasAccount": "Sudah punya akun?",
+    "welcomeTitle": "Selamat datang kembali, {{username}}",
+    "welcomeBody": "Senang kamu ada di sini. Luangkan waktu sejenak dengan tenang untuk mengenali perasaanmu hari ini. Kamu berada di ruang yang aman dan terjaga privasinya."
   },
   "checkin": {
     "title": "Check-in Mood & Fisik Harian",

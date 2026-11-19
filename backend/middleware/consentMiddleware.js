@@ -9,9 +9,9 @@ const { resolveLanguage, t } = require('../utils/i18n');
 function requireConsent(featureKey) {
   return async (req, res, next) => {
     try {
-      const user = await User.findById(req.userId).select(
-        'consents preferredLanguage country region orgCode aiChatUsage'
-      );
+      const user = await User.findById(req.userId)
+        .select('consents preferredLanguage country region orgCode aiChatUsage')
+        .lean();
       if (!user) {
         const lang = resolveLanguage(req);
         return res.status(404).json({ error: t(lang, 'userNotFound'), message: t(lang, 'userNotFound') });

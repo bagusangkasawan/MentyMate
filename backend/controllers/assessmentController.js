@@ -72,7 +72,7 @@ exports.submitAssessment = async (req, res) => {
 
 exports.getAssessments = async (req, res) => {
   try {
-    const assessments = await Assessment.find({ userId: req.userId }).sort({ createdAt: -1 }).limit(30);
+    const assessments = await Assessment.find({ userId: req.userId }).sort({ createdAt: -1 }).limit(30).lean();
     res.json(assessments);
   } catch (err) {
     console.error('Error getAssessments:', err.message);
@@ -84,8 +84,8 @@ exports.getInsights = async (req, res) => {
   const lang = resolveLanguage(req, req.currentUser);
   try {
     const [assessments, checkins] = await Promise.all([
-      Assessment.find({ userId: req.userId }).sort({ createdAt: -1 }).limit(20),
-      Checkin.find({ userId: req.userId }).sort({ date: -1 }).limit(30),
+      Assessment.find({ userId: req.userId }).sort({ createdAt: -1 }).limit(30).lean(),
+      Checkin.find({ userId: req.userId }).sort({ date: -1 }).limit(30).lean(),
     ]);
 
     const baseline = computeBaselineAndTrend(assessments, checkins);
@@ -94,7 +94,12 @@ exports.getInsights = async (req, res) => {
         ? 'Hasil skrining PHQ-9 dan GAD-7 ini bersifat reflektif untuk deteksi dini dan bukan merupakan diagnosis klinis.'
         : 'PHQ-9 and GAD-7 screening results are for early self-awareness only and do not constitute a clinical diagnosis.';
 
-    res.json({ baseline, disclaimer, recentAssessments: assessments.slice(0, 6) });
+    res.json({
+      baseline,
+      disclaimer,
+      recentAssessments: assessments.slice(0, 6),
+      assessments,
+    });
   } catch (err) {
     console.error('Error getInsights:', err.message);
     res.status(500).json({ error: t(lang, 'serverError') });

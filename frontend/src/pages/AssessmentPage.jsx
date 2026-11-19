@@ -32,11 +32,8 @@ export const AssessmentPage = ({ token, onTriggerCrisis }) => {
         const data = await withSessionCache(
           'user:assessments:data',
           async () => {
-            const [ins, hist] = await Promise.all([
-              callApi('/assessments/insights', 'GET', null, token, { silent: true }),
-              callApi('/assessments', 'GET', null, token, { silent: true }),
-            ]);
-            return { insights: ins, history: hist || [] };
+            const ins = await callApi('/assessments/insights', 'GET', null, token, { silent: true });
+            return { insights: ins, history: ins?.assessments || [] };
           },
           { force }
         );

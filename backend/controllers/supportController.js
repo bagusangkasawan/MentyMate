@@ -3,6 +3,7 @@
  */
 const SupportService = require('../models/SupportService');
 const AnalyticsEvent = require('../models/AnalyticsEvent');
+const { ensureSupportServicesSeeded } = require('../data/seedSupportServices');
 const { resolveLanguage, t } = require('../utils/i18n');
 
 /**
@@ -30,14 +31,20 @@ exports.listServices = async (req, res) => {
       filter.languages = lang.toLowerCase();
     }
 
-    const services = await SupportService.find(filter).sort({ country: 1, category: 1 });
+    let [services] = await Promise.all([
+      SupportService.find(filter).sort({ country: 1, category: 1 }).lean(),
+      AnalyticsEvent.create({
+        eventType: 'directory_viewed',
+        language: activeLang,
+        country: (country || 'ID').toUpperCase(),
+        metadata: { category: category || 'ALL' },
+      }).catch(() => {}),
+    ]);
 
-    await AnalyticsEvent.create({
-      eventType: 'directory_viewed',
-      language: activeLang,
-      country: (country || 'ID').toUpperCase(),
-      metadata: { category: category || 'ALL' },
-    }).catch(() => {});
+    if (services.length === 0) {
+      await ensureSupportServicesSeeded();
+      services = await SupportService.find(filter).sort({ country: 1, category: 1 }).lean();
+    }
 
     res.json(services);
   } catch (err) {
