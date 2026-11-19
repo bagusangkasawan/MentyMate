@@ -17,10 +17,11 @@ import { useTranslation } from 'react-i18next';
 /**
  * Landing page presenting the 4 intent cards, 6-pillar workflow, and FAQ accordion.
  * @param {object} props
+ * @param {object|null} [props.user]
  * @param {() => void} props.onOpenCrisis
  * @returns {JSX.Element}
  */
-export const HomePage = ({ onOpenCrisis }) => {
+export const HomePage = ({ user, onOpenCrisis }) => {
   const { t } = useTranslation();
   const [openFaq, setOpenFaq] = useState(0);
 
@@ -40,19 +41,19 @@ export const HomePage = ({ onOpenCrisis }) => {
     <div>
       {/* 1. Linear-inspired Left-Aligned Editorial Hero + Full-Width Workspace Canvas */}
       <section className="mx-auto max-w-6xl px-4 pb-12 pt-10 sm:px-6 lg:pb-20 lg:pt-16">
-        <div className="max-w-3xl">
+        <div>
           <p className="text-sm font-semibold text-secondary">{t('common.tagline')}</p>
-          <h1 className="mt-3 text-[clamp(1.85rem,1.25rem+2.4vw,3.15rem)] font-bold leading-[1.1] text-foreground">
+          <h1 className="mt-3 max-w-3xl text-[clamp(1.85rem,1.25rem+2.4vw,3.15rem)] font-bold leading-[1.1] text-foreground">
             {t('landing.headline')}
           </h1>
           <p className="mt-4 max-w-2xl text-[clamp(0.975rem,0.9rem+0.3vw,1.125rem)] leading-relaxed text-muted-foreground">
             {t('landing.subheadline')}
           </p>
 
-          <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
             <Link
               to="/checkin"
-              className="inline-flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full bg-primary px-7 py-3 text-sm font-semibold text-primary-foreground transition-transform hover:bg-primary-hover active:scale-[0.98] sm:w-auto"
+              className="inline-flex min-h-[48px] w-full items-center justify-center gap-2 whitespace-nowrap rounded-full bg-primary px-7 py-3 text-sm font-semibold text-primary-foreground transition-transform hover:bg-primary-hover active:scale-[0.98] sm:w-auto"
             >
               <ArrowRight className="h-4 w-4 shrink-0" aria-hidden="true" />
               {t('landing.primaryCta')}
@@ -66,13 +67,15 @@ export const HomePage = ({ onOpenCrisis }) => {
               {t('landing.secondaryCta')}
             </Link>
 
-            <Link
-              to="/try"
-              className="inline-flex min-h-[48px] w-full items-center justify-center gap-2 whitespace-nowrap rounded-full border border-primary/30 bg-accent-soft/70 px-6 py-3 text-sm font-semibold text-primary transition-transform hover:bg-accent-soft active:scale-[0.98] sm:w-auto"
-            >
-              <Sparkles className="h-4 w-4 shrink-0" aria-hidden="true" />
-              {t('landing.tryCta')}
-            </Link>
+            {!user && (
+              <Link
+                to="/try"
+                className="inline-flex min-h-[48px] w-full items-center justify-center gap-2 whitespace-nowrap rounded-full border border-primary/30 bg-accent-soft/70 px-6 py-3 text-sm font-semibold text-primary transition-transform hover:bg-accent-soft active:scale-[0.98] sm:w-auto"
+              >
+                <Sparkles className="h-4 w-4 shrink-0" aria-hidden="true" />
+                {t('landing.tryCta')}
+              </Link>
+            )}
           </div>
         </div>
 

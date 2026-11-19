@@ -212,13 +212,21 @@ export default function App() {
             path="/"
             element={
               <HomePage
+                user={user}
                 onChatbotOpen={() => setIsChatOpen(true)}
                 onOpenCrisis={() => handleOpenCrisis()}
               />
             }
           />
           <Route path="/support" element={<SupportPage user={user} />} />
-          <Route path="/try" element={<TryPage onOpenCrisis={() => handleOpenCrisis()} />} />
+          <Route
+            path="/try"
+            element={
+              <PublicOnlyRoute>
+                <TryPage onOpenCrisis={() => handleOpenCrisis()} />
+              </PublicOnlyRoute>
+            }
+          />
           <Route path="/impact" element={<ImpactMetricsPage />} />
           <Route path="/blog" element={<BlogPage />} />
           <Route path="/blog/:id" element={<BlogPage />} />
