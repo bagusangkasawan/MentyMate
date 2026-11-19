@@ -82,26 +82,70 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// MongoDB connection
-if (process.env.MONGO_URI) {
-  mongoose
-    .connect(process.env.MONGO_URI, {})
-    .then(async () => {
-      const { name } = mongoose.connection;
-      console.log(`MongoDB connected database: ${name}`);
-      await ensureSupportServicesSeeded();
-    })
-    .catch((err) => console.error('MongoDB connection error:', err));
+// Serverless-safe cached MongoDB connection (awaited per request before DB routes)
+let dbPromise = null;
+let seeded = false;
+
+/**
+ * Ensures MongoDB is connected before handling database-backed requests in serverless environments.
+ * Reconnects automatically if a frozen serverless container lost its socket.
+ * @returns {Promise<void>}
+ */
+async function ensureDbConnected() {
+  const mongoUri = process.env.MONGO_URI || process.env.MONGODB_URI;
+  if (!mongoUri) {
+    throw new Error('MONGO_URI environment variable is not configured.');
+  }
+
+  // 1 = connected
+  if (mongoose.connection.readyState === 1) return;
+
+  // If not currently connecting (2), clear any stale resolved promise from a dropped connection
+  if (mongoose.connection.readyState !== 2) {
+    dbPromise = null;
+  }
+
+  if (!dbPromise) {
+    dbPromise = mongoose
+      .connect(mongoUri, {
+        serverSelectionTimeoutMS: 5000,
+        maxPoolSize: 10,
+      })
+      .then(async (conn) => {
+        console.log(`MongoDB connected database: ${conn.connection.name}`);
+        if (!seeded) {
+          seeded = true;
+          await ensureSupportServicesSeeded();
+        }
+        return conn;
+      })
+      .catch((err) => {
+        dbPromise = null;
+        console.error('MongoDB connection error:', err.message);
+        throw err;
+      });
+  }
+
+  await dbPromise;
 }
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/checkin', checkinRoutes);
-app.use('/api/chat', chatRoutes);
-app.use('/api/assessments', assessmentRoutes);
-app.use('/api/support', supportRoutes);
-app.use('/api/privacy', privacyRoutes);
-app.use('/api/analytics', analyticsRoutes);
+const requireDb = async (req, res, next) => {
+  try {
+    await ensureDbConnected();
+    next();
+  } catch {
+    res.status(503).json({ error: t(resolveLanguage(req), 'serverError') });
+  }
+};
+
+// Routes (DB-backed)
+app.use('/api/auth', requireDb, authRoutes);
+app.use('/api/checkin', requireDb, checkinRoutes);
+app.use('/api/chat', requireDb, chatRoutes);
+app.use('/api/assessments', requireDb, assessmentRoutes);
+app.use('/api/support', requireDb, supportRoutes);
+app.use('/api/privacy', requireDb, privacyRoutes);
+app.use('/api/analytics', requireDb, analyticsRoutes);
 
 const PORT = process.env.PORT || 3000;
 if (require.main === module) {
